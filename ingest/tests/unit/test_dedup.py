@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from ingest.dedup import compute_content_hash, dedupe
 from ingest.models import NormalizedEvent
 
@@ -29,3 +29,20 @@ def test_dedupe_by_content_hash_when_no_id():
     b = _ev(city="Würzburg")
     out = dedupe([a, b])
     assert len(out) == 1
+
+def test_hash_same_instant_different_timezones_equal():
+    """Same instant in UTC+2 and UTC must produce identical content hashes."""
+    tz_plus2 = timezone(timedelta(hours=2))
+    dt_plus2 = datetime(2026, 7, 8, 18, 30, tzinfo=tz_plus2)
+    dt_utc = datetime(2026, 7, 8, 16, 30, tzinfo=timezone.utc)
+    h1 = compute_content_hash("Test Event", dt_plus2, "Würzburg", None)
+    h2 = compute_content_hash("Test Event", dt_utc, "Würzburg", None)
+    assert h1 == h2
+
+def test_hash_naive_datetime_treated_as_utc():
+    """A naive datetime must yield the same hash as the explicit UTC equivalent."""
+    dt_naive = datetime(2026, 7, 8, 16, 30)  # no tzinfo
+    dt_utc = datetime(2026, 7, 8, 16, 30, tzinfo=timezone.utc)
+    h_naive = compute_content_hash("Test Event", dt_naive, "Würzburg", None)
+    h_utc = compute_content_hash("Test Event", dt_utc, "Würzburg", None)
+    assert h_naive == h_utc
