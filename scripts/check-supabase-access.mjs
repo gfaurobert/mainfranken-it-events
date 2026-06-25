@@ -99,7 +99,7 @@ results.push(
     try {
       pg = await import("pg");
     } catch {
-      throw new Error("install pg first: npm install pg");
+      throw new Error("install pg first: pnpm add -D pg");
     }
 
     const projectRef = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
