@@ -1,0 +1,30 @@
+sources:
+  - name: Schaffenburg e.V.
+    url: https://schaffenburg.org/calendar/noopenspace.ics
+    type: ical
+    region: Aschaffenburg
+    organizer: Schaffenburg e.V.
+    active: true
+  - name: Meetup WUE.tech
+    url: https://www.meetup.com/wue-tech/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: WUE.tech
+    active: true
+  - name: Meetup Modern Software Development Würzburg
+    url: https://www.meetup.com/wuerzburg-software-development/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: Modern Software Development
+    active: true
+  - name: confs.tech (DE)
+    url: https://raw.githubusercontent.com/tech-conferences/conference-data/main/conferences/2026/general.json
+    type: confstech
+    region: Germany
+    active: true
+  - name: ZDI Mainfranken
+    url: https://www.zdi-mainfranken.de/events/
+    type: html
+    region: Würzburg
+    organizer: ZDI Mainfranken
+    active: true
