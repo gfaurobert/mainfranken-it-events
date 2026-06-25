@@ -16,7 +16,8 @@
     "start": "node --env-file=.env dist/index.js",
     "test:watch": "vitest",
     "check:supabase": "node scripts/check-supabase-access.mjs",
-    "smoke:mcp": "node --env-file=.env scripts/smoke-mcp.mjs"
+    "smoke:mcp": "node --env-file=.env scripts/smoke-mcp.mjs",
+    "demo": "pnpm dlx serve ../../web/demo -p 3456"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
