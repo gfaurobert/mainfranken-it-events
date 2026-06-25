@@ -12,7 +12,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test:watch": "vitest",
-    "check:supabase": "node scripts/check-supabase-access.mjs"
+    "check:supabase": "node scripts/check-supabase-access.mjs",
+    "smoke:mcp": "node scripts/smoke-mcp.mjs"
   },
   "keywords": [],
   "author": "",
