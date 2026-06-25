@@ -1,5 +1,5 @@
-import type { FastifyInstance } from "fastify";
-import { McpServer } from "@modelcontextprotocol/server";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { McpServer, isInitializeRequest } from "@modelcontextprotocol/server";
 import { NodeStreamableHTTPServerTransport } from "@modelcontextprotocol/node";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { registerEventTools } from "./tools.js";
@@ -13,42 +13,74 @@ export function createMcpServer(supabase: SupabaseClient) {
   return server;
 }
 
+function jsonRpcError(reply: FastifyReply, status: number, code: number, message: string) {
+  return reply.status(status).send({
+    jsonrpc: "2.0",
+    error: { code, message },
+    id: null,
+  });
+}
+
 export async function registerMcpRoutes(app: FastifyInstance, supabase: SupabaseClient) {
-  const mcpServer = createMcpServer(supabase);
   const transports = new Map<string, NodeStreamableHTTPServerTransport>();
 
-  app.post("/mcp", async (request, reply) => {
+  async function handleMcpPost(request: FastifyRequest, reply: FastifyReply) {
     const sessionId = request.headers["mcp-session-id"] as string | undefined;
-    let transport = sessionId ? transports.get(sessionId) : undefined;
-    let activeSessionId = sessionId;
+    const body = request.body;
 
-    if (!transport) {
-      transport = new NodeStreamableHTTPServerTransport({
-        sessionIdGenerator: () => crypto.randomUUID(),
-        onsessioninitialized: (id) => {
-          activeSessionId = id;
-          transports.set(id, transport!);
-        },
-      });
-      await mcpServer.connect(transport);
+    try {
+      let transport: NodeStreamableHTTPServerTransport | undefined;
+
+      if (sessionId) {
+        transport = transports.get(sessionId);
+        if (!transport) {
+          return jsonRpcError(reply, 404, -32001, "Session not found");
+        }
+      } else if (isInitializeRequest(body)) {
+        transport = new NodeStreamableHTTPServerTransport({
+          sessionIdGenerator: () => crypto.randomUUID(),
+          onsessioninitialized: (id) => {
+            transports.set(id, transport!);
+          },
+        });
+
+        transport.onclose = () => {
+          const sid = transport!.sessionId;
+          if (sid) transports.delete(sid);
+        };
+
+        const mcpServer = createMcpServer(supabase);
+        await mcpServer.connect(transport);
+      } else {
+        return jsonRpcError(reply, 400, -32000, "Bad Request: Session ID required");
+      }
+
+      reply.hijack();
+      await transport.handleRequest(request.raw, reply.raw, body);
+    } catch (error) {
+      request.log.error(error);
+      if (!reply.raw.headersSent) {
+        return jsonRpcError(reply, 500, -32603, "Internal server error");
+      }
+    }
+  }
+
+  async function handleMcpSessionRequest(request: FastifyRequest, reply: FastifyReply) {
+    const sessionId = request.headers["mcp-session-id"] as string | undefined;
+    if (!sessionId) {
+      return reply.status(400).send("Missing session ID");
     }
 
-    reply.raw.on("close", () => {
-      if (activeSessionId) {
-        transports.delete(activeSessionId);
-      }
-      transport?.close();
-    });
+    const transport = transports.get(sessionId);
+    if (!transport) {
+      return reply.status(404).send("Session not found");
+    }
 
     reply.hijack();
-    await transport.handleRequest(request.raw, reply.raw, request.body);
-  });
+    await transport.handleRequest(request.raw, reply.raw);
+  }
 
-  app.get("/mcp", async (_request, reply) => {
-    return reply.status(405).send({ error: "Method not allowed" });
-  });
-
-  app.delete("/mcp", async (_request, reply) => {
-    return reply.status(405).send({ error: "Method not allowed" });
-  });
+  app.post("/mcp", handleMcpPost);
+  app.get("/mcp", handleMcpSessionRequest);
+  app.delete("/mcp", handleMcpSessionRequest);
 }
