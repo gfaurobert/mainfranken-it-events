@@ -42,8 +42,25 @@ class SupabaseSink:
         if not events:
             return UpsertResult(0)
         rows = [to_row(e) for e in events]
-        res = self.client.table("events").upsert(rows, on_conflict="source,external_id").execute()
-        return UpsertResult(inserted=len(res.data or rows))
+        # The unique index on (source, external_id) is a PARTIAL index
+        # (WHERE external_id IS NOT NULL), so it cannot serve as the conflict
+        # arbiter for rows where external_id is NULL.  Split the batch:
+        # rows WITH external_id  → conflict on source,external_id
+        # rows WITHOUT external_id → conflict on content_hash (full UNIQUE)
+        with_id = [r for r in rows if r.get("external_id") is not None]
+        without_id = [r for r in rows if r.get("external_id") is None]
+        inserted = 0
+        if with_id:
+            res = self.client.table("events").upsert(
+                with_id, on_conflict="source,external_id"
+            ).execute()
+            inserted += len(res.data or with_id)
+        if without_id:
+            res = self.client.table("events").upsert(
+                without_id, on_conflict="content_hash"
+            ).execute()
+            inserted += len(res.data or without_id)
+        return UpsertResult(inserted=inserted)
 
 
 class HttpSink:

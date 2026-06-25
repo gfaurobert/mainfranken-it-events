@@ -38,11 +38,19 @@ def parse_jsonld(html_text: str, source: SourceConfig) -> list[RawEvent]:
             start = ev.get("startDate")
             if not start:
                 continue
+            try:
+                starts_at = datetime.fromisoformat(start)
+            except ValueError:
+                continue
+            try:
+                ends_at = datetime.fromisoformat(ev["endDate"]) if ev.get("endDate") else None
+            except ValueError:
+                ends_at = None
             name, city = _loc(ev)
             out.append(RawEvent(
                 title=ev.get("name", "(ohne Titel)"),
-                starts_at=datetime.fromisoformat(start),
-                ends_at=datetime.fromisoformat(ev["endDate"]) if ev.get("endDate") else None,
+                starts_at=starts_at,
+                ends_at=ends_at,
                 description=ev.get("description"),
                 location_name=name,
                 city=city,

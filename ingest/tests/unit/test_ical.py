@@ -14,3 +14,20 @@ def test_parse_ical_basic():
     assert e.url == "https://schaffenburg.org/event/123"
     assert e.source == "Schaffenburg"
     assert e.starts_at.year == 2026
+
+
+def test_parse_ical_whitespace_location_becomes_none():
+    """A LOCATION field containing only whitespace should be normalised to None."""
+    ics = (
+        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+        "BEGIN:VEVENT\r\n"
+        "UID:ws-test@example.org\r\n"
+        "SUMMARY:Whitespace Location Test\r\n"
+        "DTSTART:20260801T180000Z\r\n"
+        "LOCATION:   \r\n"
+        "END:VEVENT\r\n"
+        "END:VCALENDAR\r\n"
+    )
+    events = parse_ical(ics, SRC)
+    assert len(events) == 1
+    assert events[0].location_name is None

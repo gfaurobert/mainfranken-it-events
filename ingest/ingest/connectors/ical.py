@@ -21,7 +21,7 @@ def parse_ical(ics_text: str, source: SourceConfig) -> list[RawEvent]:
         if dtstart is None:
             continue
         dtend = comp.get("DTEND")
-        loc = str(comp.get("LOCATION")) if comp.get("LOCATION") else None
+        loc = str(comp.get("LOCATION")).strip() or None if comp.get("LOCATION") else None
         out.append(RawEvent(
             title=str(comp.get("SUMMARY", "")).strip() or "(ohne Titel)",
             starts_at=_to_dt(dtstart.dt),
