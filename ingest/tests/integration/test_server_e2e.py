@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
+pytest.skip(
+    "Scaffold boilerplate for Vertex/Gemini app; project uses LiteLLM/OpenCode-Go instead",
+    allow_module_level=True,
+)
+
 import json
 import logging
 import os
@@ -22,7 +29,6 @@ import time
 from collections.abc import Iterator
 from typing import Any
 
-import pytest
 import requests
 from requests.exceptions import RequestException
 
