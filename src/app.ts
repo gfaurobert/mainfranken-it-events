@@ -16,7 +16,7 @@ export async function buildApp() {
   await app.register(eventsRoutes, { supabase });
   await app.register(authRoutes, { supabase, env });
   await app.register(meRsvpsRoutes, { supabase });
-  await registerMcpRoutes(app, supabase);
+  await registerMcpRoutes(app, supabase, env);
 
   app.get("/health", async () => ({ status: "ok" }));
 

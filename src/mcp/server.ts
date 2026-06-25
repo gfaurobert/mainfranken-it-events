@@ -2,14 +2,18 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { McpServer, isInitializeRequest } from "@modelcontextprotocol/server";
 import { NodeStreamableHTTPServerTransport } from "@modelcontextprotocol/node";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { registerEventTools } from "./tools.js";
+import type { Env } from "../lib/env.js";
+import { authContext } from "../lib/auth-context.js";
+import { resolvePatFromHeader } from "../services/resolve-pat.js";
+import { registerAuthTools, registerEventTools } from "./tools.js";
 
-export function createMcpServer(supabase: SupabaseClient) {
+export function createMcpServer(supabase: SupabaseClient, env: Env) {
   const server = new McpServer({
     name: "mainfranken-it-events",
     version: "0.1.0",
   });
   registerEventTools(server, supabase);
+  registerAuthTools(server, supabase, env);
   return server;
 }
 
@@ -21,7 +25,17 @@ function jsonRpcError(reply: FastifyReply, status: number, code: number, message
   });
 }
 
-export async function registerMcpRoutes(app: FastifyInstance, supabase: SupabaseClient) {
+function getAuthorizationHeader(request: FastifyRequest): string | undefined {
+  const { authorization } = request.headers;
+  if (Array.isArray(authorization)) return authorization[0];
+  return authorization;
+}
+
+export async function registerMcpRoutes(
+  app: FastifyInstance,
+  supabase: SupabaseClient,
+  env: Env,
+) {
   const transports = new Map<string, NodeStreamableHTTPServerTransport>();
 
   async function handleMcpPost(request: FastifyRequest, reply: FastifyReply) {
@@ -49,14 +63,17 @@ export async function registerMcpRoutes(app: FastifyInstance, supabase: Supabase
           if (sid) transports.delete(sid);
         };
 
-        const mcpServer = createMcpServer(supabase);
+        const mcpServer = createMcpServer(supabase, env);
         await mcpServer.connect(transport);
       } else {
         return jsonRpcError(reply, 400, -32000, "Bad Request: Session ID required");
       }
 
       reply.hijack();
-      await transport.handleRequest(request.raw, reply.raw, body);
+      const userId = await resolvePatFromHeader(supabase, getAuthorizationHeader(request));
+      await authContext.run({ userId: userId ?? undefined }, async () => {
+        await transport.handleRequest(request.raw, reply.raw, body);
+      });
     } catch (error) {
       request.log.error(error);
       if (!reply.raw.headersSent) {
@@ -77,7 +94,10 @@ export async function registerMcpRoutes(app: FastifyInstance, supabase: Supabase
     }
 
     reply.hijack();
-    await transport.handleRequest(request.raw, reply.raw);
+    const userId = await resolvePatFromHeader(supabase, getAuthorizationHeader(request));
+    await authContext.run({ userId: userId ?? undefined }, async () => {
+      await transport.handleRequest(request.raw, reply.raw);
+    });
   }
 
   app.post("/mcp", handleMcpPost);

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod";
 import { searchEvents } from "../services/search-events.js";
 import { EventNotFoundError, getEvent } from "../services/get-event.js";
+export { registerAuthTools } from "./auth.js";
 
 const searchInputSchema = z.object({
   query: z.string().optional(),
