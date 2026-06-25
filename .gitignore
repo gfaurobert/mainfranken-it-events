@@ -13,6 +13,10 @@ venv/
 
 # Node
 node_modules/
+dist/
+
+# Git worktrees
+.worktrees/
 
 # Tooling
 .mcp.json
