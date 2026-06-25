@@ -51,16 +51,17 @@ export async function registerMcpRoutes(
           return jsonRpcError(reply, 404, -32001, "Session not found");
         }
       } else if (isInitializeRequest(body)) {
+        let activeSessionId: string | undefined;
         transport = new NodeStreamableHTTPServerTransport({
           sessionIdGenerator: () => crypto.randomUUID(),
           onsessioninitialized: (id) => {
+            activeSessionId = id;
             transports.set(id, transport!);
           },
         });
 
         transport.onclose = () => {
-          const sid = transport!.sessionId;
-          if (sid) transports.delete(sid);
+          if (activeSessionId) transports.delete(activeSessionId);
         };
 
         const mcpServer = createMcpServer(supabase, env);
@@ -82,25 +83,11 @@ export async function registerMcpRoutes(
     }
   }
 
-  async function handleMcpSessionRequest(request: FastifyRequest, reply: FastifyReply) {
-    const sessionId = request.headers["mcp-session-id"] as string | undefined;
-    if (!sessionId) {
-      return reply.status(400).send("Missing session ID");
-    }
-
-    const transport = transports.get(sessionId);
-    if (!transport) {
-      return reply.status(404).send("Session not found");
-    }
-
-    reply.hijack();
-    const userId = await resolvePatFromHeader(supabase, getAuthorizationHeader(request));
-    await authContext.run({ userId: userId ?? undefined }, async () => {
-      await transport.handleRequest(request.raw, reply.raw);
-    });
+  function handleMcpMethodNotAllowed(_request: FastifyRequest, reply: FastifyReply) {
+    return reply.status(405).send({ error: "Method not allowed" });
   }
 
   app.post("/mcp", handleMcpPost);
-  app.get("/mcp", handleMcpSessionRequest);
-  app.delete("/mcp", handleMcpSessionRequest);
+  app.get("/mcp", handleMcpMethodNotAllowed);
+  app.delete("/mcp", handleMcpMethodNotAllowed);
 }
