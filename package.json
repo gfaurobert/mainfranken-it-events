@@ -22,6 +22,7 @@
     "node": ">=24"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
     "@fastify/cors": "^11.2.0",
     "@modelcontextprotocol/node": "^2.0.0-alpha.2",
     "@modelcontextprotocol/server": "^2.0.0-alpha.2",
