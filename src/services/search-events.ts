@@ -2,6 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { PUBLIC_EVENT_COLUMNS } from "../schemas/search.js";
 import type { Event, SearchEventsParams, SearchEventsResult } from "../types/event.js";
 
+function escapePostgrestFilterValue(value: string): string {
+  const escaped = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `"${escaped}"`;
+}
+
 export async function searchEvents(
   supabase: SupabaseClient,
   params: SearchEventsParams,
@@ -11,7 +16,7 @@ export async function searchEvents(
   let query = supabase.from("events").select(PUBLIC_EVENT_COLUMNS);
 
   if (params.query) {
-    const pattern = `%${params.query}%`;
+    const pattern = escapePostgrestFilterValue(`%${params.query}%`);
     query = query.or(`title.ilike.${pattern},description.ilike.${pattern}`);
   }
   if (params.date_from) {

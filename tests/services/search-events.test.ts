@@ -47,4 +47,12 @@ describe("searchEvents", () => {
     const { client } = makeMockClient([], new Error("db down") as never);
     await expect(searchEvents(client, {})).rejects.toThrow("db down");
   });
+
+  it("escapes commas in search query for PostgREST or filter", async () => {
+    const { client, chain } = makeMockClient([]);
+    await searchEvents(client, { query: "foo,bar" });
+    expect(chain.or).toHaveBeenCalledWith(
+      'title.ilike."%foo,bar%",description.ilike."%foo,bar%"',
+    );
+  });
 });

@@ -20,11 +20,13 @@ export async function registerMcpRoutes(app: FastifyInstance, supabase: Supabase
   app.post("/mcp", async (request, reply) => {
     const sessionId = request.headers["mcp-session-id"] as string | undefined;
     let transport = sessionId ? transports.get(sessionId) : undefined;
+    let activeSessionId = sessionId;
 
     if (!transport) {
       transport = new NodeStreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
         onsessioninitialized: (id) => {
+          activeSessionId = id;
           transports.set(id, transport!);
         },
       });
@@ -32,8 +34,8 @@ export async function registerMcpRoutes(app: FastifyInstance, supabase: Supabase
     }
 
     reply.raw.on("close", () => {
-      if (sessionId) {
-        transports.delete(sessionId);
+      if (activeSessionId) {
+        transports.delete(activeSessionId);
       }
       transport?.close();
     });
