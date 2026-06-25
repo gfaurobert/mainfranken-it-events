@@ -1,4 +1,4 @@
-from ingest.agents.extractor import build_extractor, ExtractorOutput
+from ingest.agents.extractor import build_extractor, ExtractedEvent, ExtractorOutput
 
 
 def test_extractor_is_configured():
@@ -10,3 +10,8 @@ def test_extractor_is_configured():
 def test_extractor_output_schema():
     o = ExtractorOutput(events=[])
     assert o.events == []
+
+
+def test_extracted_event_has_no_source_field():
+    assert "source" not in ExtractedEvent.model_fields
+    assert "source_url" not in ExtractedEvent.model_fields

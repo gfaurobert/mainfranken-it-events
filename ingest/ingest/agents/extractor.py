@@ -1,6 +1,7 @@
+from datetime import datetime
+
 from google.adk.agents import LlmAgent
 from pydantic import BaseModel
-from ingest.models import RawEvent
 from ingest.config import get_model
 
 INSTRUCTION = """Du extrahierst IT-/Tech-Veranstaltungen aus dem gelieferten Seitentext.
@@ -9,8 +10,23 @@ Felder, die nicht im Text stehen, lässt du leer. starts_at als ISO-8601.
 Setze source und source_url NICHT (macht der Aufrufer)."""
 
 
+class ExtractedEvent(BaseModel):
+    title: str
+    starts_at: datetime
+    ends_at: datetime | None = None
+    description: str | None = None
+    location_name: str | None = None
+    city: str | None = None
+    url: str | None = None
+    organizer: str | None = None
+    is_online: bool | None = None
+    is_free: bool | None = None
+    price: str | None = None
+    external_id: str | None = None
+
+
 class ExtractorOutput(BaseModel):
-    events: list[RawEvent]
+    events: list[ExtractedEvent]
 
 
 def build_extractor() -> LlmAgent:
