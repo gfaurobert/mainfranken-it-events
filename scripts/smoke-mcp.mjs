@@ -1,4 +1,5 @@
-const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3000";
+const port = process.env.PORT ?? "3000";
+const base = process.env.SMOKE_BASE_URL ?? `http://localhost:${port}`;
 
 const initRes = await fetch(`${base}/mcp`, {
   method: "POST",
