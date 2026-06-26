@@ -4,7 +4,7 @@ const FALLBACK_DATA = "./data/events.json";
 const DEFAULT_API_BASE =
   window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:3789/events"
-    : "https://events.itmainfranken.wodanio.dev/events";
+    : "https://mie.faurobert.fr/events";
 
 const USE_DEMO_DATA = API_PARAM === "demo";
 const API_BASE = USE_DEMO_DATA ? FALLBACK_DATA : API_PARAM || DEFAULT_API_BASE;

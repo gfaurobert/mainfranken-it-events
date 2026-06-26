@@ -21,10 +21,15 @@ describe("sendPatEmail", () => {
   });
 
   it("sendPatEmail calls transport.sendMail", async () => {
-    const sendMail = vi.fn().mockResolvedValue({ messageId: "1" });
+    const sendMail = vi.fn().mockResolvedValue({
+      messageId: "1",
+      accepted: ["user@example.com"],
+      rejected: [],
+      response: "250 OK",
+    });
     const transport = { sendMail } as never;
 
-    await sendPatEmail(
+    const result = await sendPatEmail(
       transport,
       env,
       { to: "user@example.com", pat: "mfe_pat_xyz", isRenewal: true },
@@ -33,5 +38,7 @@ describe("sendPatEmail", () => {
     expect(sendMail).toHaveBeenCalledOnce();
     expect(sendMail.mock.calls[0][0].to).toBe("user@example.com");
     expect(sendMail.mock.calls[0][0].text).toContain("mfe_pat_xyz");
+    expect(result.messageId).toBe("1");
+    expect(result.accepted).toEqual(["user@example.com"]);
   });
 });
