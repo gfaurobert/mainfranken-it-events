@@ -1,6 +1,13 @@
 from datetime import datetime, timedelta, timezone
-from ingest.pipeline import is_upcoming, _upcoming_window, HORIZON_DAYS, _ensure_aware
-from ingest.models import RawEvent
+from ingest.pipeline import (
+    is_upcoming, _upcoming_window, HORIZON_DAYS, _ensure_aware, apply_geo_filter,
+    _with_source_defaults,
+)
+from ingest.models import RawEvent, NormalizedEvent, SourceConfig
+
+_SRC = SourceConfig(name="Uni Würzburg – Institut für Informatik",
+                    url="https://example.org", type="html", region="Würzburg",
+                    organizer="Uni Würzburg")
 
 
 def _ev(dt: datetime) -> RawEvent:
@@ -41,3 +48,66 @@ def test_upcoming_window_spans_horizon():
     start, end = _upcoming_window()
     assert (end - start).days == HORIZON_DAYS
     assert start.hour == 0 and start.minute == 0
+
+
+def _norm(city=None, location_name=None, is_online=False, status="auto") -> NormalizedEvent:
+    return NormalizedEvent(
+        title="x", starts_at=datetime(2026, 7, 1, tzinfo=timezone.utc), source="s",
+        city=city, location_name=location_name, is_online=is_online,
+        content_hash="h", review_status=status,
+    )
+
+
+def test_geo_filter_keeps_mainfranken_event():
+    out = apply_geo_filter([_norm(city="Würzburg")])
+    assert len(out) == 1
+    assert out[0].review_status == "auto"
+
+
+def test_geo_filter_drops_outside_event():
+    assert apply_geo_filter([_norm(city="Berlin")]) == []
+
+
+def test_geo_filter_keeps_online_event_regardless_of_region():
+    # Online-Events sind ortsunabhängig und werden immer behalten.
+    out = apply_geo_filter([_norm(city="Berlin", is_online=True)])
+    assert len(out) == 1
+
+
+def test_geo_filter_flags_unknown_location_for_review():
+    out = apply_geo_filter([_norm(location_name="Online via Zoom")])
+    assert len(out) == 1
+    assert out[0].review_status == "needs_review"
+
+
+def test_geo_filter_does_not_downgrade_verified_unknown():
+    out = apply_geo_filter([_norm(location_name="irgendwo", status="verified")])
+    assert out[0].review_status == "verified"
+
+
+def test_geo_filter_keeps_existing_needs_review_for_unknown():
+    out = apply_geo_filter([_norm(location_name="irgendwo", status="needs_review")])
+    assert len(out) == 1
+    assert out[0].review_status == "needs_review"
+
+
+def _raw(organizer=None) -> RawEvent:
+    return RawEvent(title="x", starts_at=datetime(2026, 7, 1, tzinfo=timezone.utc),
+                    source="s", organizer=organizer)
+
+
+def test_source_defaults_fills_organizer_from_source():
+    out = _with_source_defaults(_raw(organizer=None), _SRC)
+    assert out.organizer == "Uni Würzburg"
+
+
+def test_source_defaults_keeps_existing_organizer():
+    out = _with_source_defaults(_raw(organizer="Eigener Veranstalter"), _SRC)
+    assert out.organizer == "Eigener Veranstalter"
+
+
+def test_source_defaults_falls_back_to_source_name_when_no_organizer():
+    src = SourceConfig(name="confs.tech (DE)", url="https://x", type="confstech",
+                       region="Germany", organizer=None)
+    out = _with_source_defaults(_raw(organizer=None), src)
+    assert out.organizer == "confs.tech (DE)"

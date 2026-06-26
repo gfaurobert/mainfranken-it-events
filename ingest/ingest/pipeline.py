@@ -4,7 +4,8 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 import httpx
-from ingest.models import SourceConfig, RawEvent
+from ingest.models import SourceConfig, RawEvent, NormalizedEvent
+from ingest.geo import classify_region
 from ingest.registry.loader import load_sources
 from ingest.connectors import ical, confstech, jsonld
 from ingest.connectors.fetch import fetch_text, html_to_text
@@ -35,6 +36,17 @@ def _stable_html_external_id(title: str, starts_at: datetime) -> str:
     return f"{starts_at.date().isoformat()}|{slug}"
 
 
+def _with_source_defaults(e: RawEvent, src: SourceConfig) -> RawEvent:
+    """Füllt fehlende Quell-Defaults am Event auf.
+
+    Veranstalter soll überall vorhanden sein. Liefert eine Quelle (z. B. eine
+    html-Seite) keinen eigenen organizer, greift der in der Registry gepflegte
+    Quell-Veranstalter, andernfalls als letzter Anker der Quellenname."""
+    if e.organizer:
+        return e
+    return e.model_copy(update={"organizer": src.organizer or src.name})
+
+
 async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
     # Feed einmal laden. Ein nicht erreichbarer/404-Feed (in der Praxis häufig:
     # Gruppe ohne Termine, Seite umgezogen) ist KEIN harter Pipeline-Fehler —
@@ -47,12 +59,12 @@ async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
         return [], "auto"
 
     if src.type == "ical":
-        return ical.parse_ical(text, src), "auto"
-    if src.type == "confstech":
-        return confstech.parse_confstech(text, src), "auto"
-    if src.type == "jsonld":
-        return jsonld.parse_jsonld(text, src), "auto"
-    if src.type == "html":
+        events, status = ical.parse_ical(text, src), "auto"
+    elif src.type == "confstech":
+        events, status = confstech.parse_confstech(text, src), "auto"
+    elif src.type == "jsonld":
+        events, status = jsonld.parse_jsonld(text, src), "auto"
+    elif src.type == "html":
         text = html_to_text(text)
         today = datetime.now(timezone.utc).date().isoformat()
         prompt = (f"Heutiges Datum: {today}\nQuelle: {src.name}\n"
@@ -73,8 +85,13 @@ async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
                 "ends_at": _ensure_aware(e.ends_at),
                 "external_id": external_id,
             }))
-        return events, "needs_review"
-    return [], "auto"
+        status = "needs_review"
+    else:
+        events, status = [], "auto"
+
+    # Quell-Defaults (Veranstalter) einheitlich für alle Connector-Typen auffüllen.
+    events = [_with_source_defaults(e, src) for e in events]
+    return events, status
 
 
 # Der Tagger läuft in Batches: ein einziger LLM-Call über sehr viele Events ist
@@ -123,6 +140,30 @@ def is_upcoming(event: RawEvent, window: tuple[datetime, datetime]) -> bool:
     return start <= event.starts_at <= end
 
 
+def apply_geo_filter(events: list[NormalizedEvent]) -> list[NormalizedEvent]:
+    """Begrenzt die Events geografisch auf Mainfranken.
+
+    Viele Quellen liefern überregional. Regeln:
+    - Online-Events: immer behalten (ortsunabhängig, für die Zielgruppe relevant).
+    - eindeutig außerhalb Mainfrankens: verwerfen.
+    - eindeutig Mainfranken: behalten.
+    - Ort unklar: behalten, aber zur manuellen Sichtung auf 'needs_review' setzen
+      (kein automatisches Verwerfen → kein Datenverlust durch Fehlklassifikation).
+    """
+    kept: list[NormalizedEvent] = []
+    for e in events:
+        if e.is_online:
+            kept.append(e)
+            continue
+        region = classify_region(e.city, e.location_name)
+        if region == "outside":
+            continue
+        if region == "unknown" and e.review_status == "auto":
+            e = e.model_copy(update={"review_status": "needs_review"})
+        kept.append(e)
+    return kept
+
+
 # Sammel-Parallelität begrenzen: html-Quellen lösen je einen LLM-Call aus;
 # zu viele gleichzeitig überlasten den Provider (Rate-Limit/Timeouts).
 COLLECT_CONCURRENCY = 6
@@ -162,6 +203,7 @@ async def run_ingest(sink=None, sources: list[SourceConfig] | None = None) -> di
     for i, e in enumerate(raw):
         normalized.extend(finalize([e], {0: tagged[i]} if i in tagged else {},
                                     default_status=status_map.get(i, "auto")))
-    deduped = dedupe(normalized)
+    geo_filtered = apply_geo_filter(normalized)
+    deduped = dedupe(geo_filtered)
     res = sink.upsert_batch(deduped)
     return build_report(len(sources), len(raw), len(deduped), res.inserted, errors)

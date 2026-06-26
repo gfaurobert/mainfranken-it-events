@@ -50,6 +50,15 @@ def finalize(
             is_online = bool(e.is_online) if e.is_online is not None else False
         dump = e.model_dump()
         dump.pop("is_online", None)
+        # Jedes Event braucht einen Link fürs UI. Viele Quellen (html-Extraktion,
+        # manche iCal-Feeds) liefern keine spezifische Event-URL → auf die
+        # Quell-URL zurückfallen, statt einen Detail-Link ganz wegzulassen.
+        if not dump.get("url"):
+            dump["url"] = e.source_url
+        # Online-Events haben oft keinen physischen Ort. Statt einer leeren
+        # Ortsspalte explizit "Online" anzeigen.
+        if is_online and not dump.get("location_name"):
+            dump["location_name"] = "Online"
         out.append(
             NormalizedEvent(
                 **dump,

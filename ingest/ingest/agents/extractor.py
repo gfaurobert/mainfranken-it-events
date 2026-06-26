@@ -14,6 +14,17 @@ Stabilität (WICHTIG — sonst entstehen beim erneuten Lauf Duplikate):
   nicht kürzen, nicht umformulieren, keine Zusätze.
 - Wenn keine Uhrzeit erkennbar ist, setze die Uhrzeit immer auf 00:00.
 
+Ort & Veranstalter (so vollständig wie möglich aus dem Text ableiten, aber
+nichts erfinden):
+- location_name: konkrete Räumlichkeit oder Adresse des Events
+  (z.B. "THWS, Sanderheinrichsleitenweg 20" oder "Rathaus, Marktplatz 1").
+  Übernimm auch Adresszeilen, die in der Nähe des Event-Titels stehen.
+- city: die Stadt. Leite sie wenn nötig aus einer Adresse oder PLZ ab
+  (z.B. "97070 Würzburg" → city "Würzburg"). Eine deutsche PLZ ist 5-stellig.
+- is_online: true, wenn der Text auf online/virtuell/Zoom/Teams/Webinar/Stream/
+  Livestream hindeutet. Bei reinen Online-Events location_name leer (null) lassen.
+- organizer: der Veranstalter/die ausrichtende Organisation, falls genannt.
+
 Datums-Regeln (dir wird das heutige Datum genannt):
 - Nennt ein Event nur Tag+Monat OHNE Jahr, wähle das nächste zukünftige Vorkommen
   relativ zum heutigen Datum (also dieses oder nächstes Jahr).
