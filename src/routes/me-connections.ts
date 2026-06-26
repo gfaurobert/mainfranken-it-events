@@ -2,6 +2,7 @@ import type { FastifyPluginAsync, FastifyReply } from "fastify";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod";
 import { rsvpStatusSchema } from "../schemas/auth.js";
+import { formatServiceError } from "../lib/format-service-error.js";
 import { buildRequirePatPreHandler } from "../plugins/require-pat.js";
 import { requestConnectionOtp } from "../services/request-connection-otp.js";
 import { redeemConnectionOtp } from "../services/redeem-connection-otp.js";
@@ -73,7 +74,7 @@ export const meConnectionsRoutes: FastifyPluginAsync<MeConnectionsRouteOptions> 
       const mapped = mapConnectionError(error, reply);
       if (mapped) return mapped;
       request.log.error(error);
-      return reply.status(500).send({ error: "Failed to request connection OTP" });
+      return reply.status(500).send({ error: formatServiceError(error) });
     }
   });
 
@@ -94,7 +95,7 @@ export const meConnectionsRoutes: FastifyPluginAsync<MeConnectionsRouteOptions> 
         const mapped = mapConnectionError(error, reply);
         if (mapped) return mapped;
         request.log.error(error);
-        return reply.status(500).send({ error: "Failed to redeem connection OTP" });
+        return reply.status(500).send({ error: formatServiceError(error) });
       }
     },
   );

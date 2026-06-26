@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod";
 import { requireAuthUserId } from "../lib/auth-context.js";
+import { formatServiceError } from "../lib/format-service-error.js";
 import { rsvpStatusSchema } from "../schemas/auth.js";
 import {
   ConnectionNameNotFoundError,
@@ -67,6 +68,13 @@ function connectionErrorResult(error: unknown) {
   return undefined;
 }
 
+function unknownErrorResult(error: unknown) {
+  return {
+    content: [{ type: "text" as const, text: formatServiceError(error) }],
+    isError: true,
+  };
+}
+
 export function registerConnectionTools(server: McpServer, supabase: SupabaseClient) {
   server.registerTool(
     "request_connection_otp",
@@ -91,7 +99,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
         if (authError) return authError;
         const connError = connectionErrorResult(error);
         if (connError) return connError;
-        throw error;
+        return unknownErrorResult(error);
       }
     },
   );
@@ -117,7 +125,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
         if (authError) return authError;
         const connError = connectionErrorResult(error);
         if (connError) return connError;
-        throw error;
+        return unknownErrorResult(error);
       }
     },
   );
@@ -143,7 +151,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
         if (authError) return authError;
         const connError = connectionErrorResult(error);
         if (connError) return connError;
-        throw error;
+        return unknownErrorResult(error);
       }
     },
   );
@@ -186,7 +194,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
         if (authError) return authError;
         const connError = connectionErrorResult(error);
         if (connError) return connError;
-        throw error;
+        return unknownErrorResult(error);
       }
     },
   );
@@ -211,7 +219,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
         if (authError) return authError;
         const connError = connectionErrorResult(error);
         if (connError) return connError;
-        throw error;
+        return unknownErrorResult(error);
       }
     },
   );
