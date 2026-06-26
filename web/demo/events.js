@@ -316,8 +316,38 @@ function setupBackToTop() {
   });
 }
 
+function setupMcpCopy() {
+  const button = document.getElementById("mcp-copy-btn");
+  if (!button) return;
+
+  const target = document.getElementById(button.dataset.target);
+  if (!target) return;
+
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(target.textContent.trim());
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(target);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      document.execCommand("copy");
+      selection?.removeAllRanges();
+    }
+
+    button.classList.add("is-copied");
+    button.setAttribute("aria-label", "Kopiert!");
+    setTimeout(() => {
+      button.classList.remove("is-copied");
+      button.setAttribute("aria-label", "Prompt kopieren");
+    }, 2000);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setupHeader();
   setupBackToTop();
+  setupMcpCopy();
   loadEvents();
 });
