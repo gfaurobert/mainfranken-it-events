@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Env } from "../lib/env.js";
 import { authContext } from "../lib/auth-context.js";
 import { resolvePatFromHeader } from "../services/resolve-pat.js";
-import { registerAuthTools, registerEventTools } from "./tools.js";
+import { registerAuthTools, registerConnectionTools, registerEventTools } from "./tools.js";
 
 export function createMcpServer(supabase: SupabaseClient, env: Env) {
   const server = new McpServer({
@@ -14,6 +14,7 @@ export function createMcpServer(supabase: SupabaseClient, env: Env) {
   });
   registerEventTools(server, supabase);
   registerAuthTools(server, supabase, env);
+  registerConnectionTools(server, supabase);
   return server;
 }
 

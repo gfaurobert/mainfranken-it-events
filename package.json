@@ -17,6 +17,8 @@
     "test:watch": "vitest",
     "check:supabase": "node scripts/check-supabase-access.mjs",
     "smoke:mcp": "node --env-file=.env scripts/smoke-mcp.mjs",
+    "smoke:connection-otp": "node --env-file=.env scripts/smoke-connection-otp.mjs",
+    "db:apply:connections": "node scripts/apply-user-connections-migration.mjs",
     "demo": "pnpm dlx serve web/demo -p 3456",
     "pm2:dev": "pm2 start ecosystem.dev.config.cjs",
     "pm2:dev:stop": "pm2 delete ecosystem.dev.config.cjs",

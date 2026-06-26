@@ -12,7 +12,7 @@ Simple tracker for the Mainfranken IT-Events portal (hackathon scope).
 | Seed / dummy data | Supabase | **Done** | 6 events in `events` table |
 | Event ingest | Python ADK → API | Planned | Colleague; `POST /ingest/events` later |
 | RSVP | MCP + API | Planned | Needs auth |
-| Connect via OTP | MCP + API | Planned | Needs auth |
+| Connect via OTP | MCP + API | **Done** | MCP: `request_connection_otp`, `redeem_connection_otp`, `list_connections`, `list_connection_events`, `remove_connection` · REST: `POST /me/connections/otp`, `POST /me/connections/otp/redeem`, `GET /me/connections`, `GET /me/connections/events`, `DELETE /me/connections/:user_id` |
 | Auth (human + agent PAT) | MCP + API | Planned | Phase 2 |
 
 **Legend:** Done · Next · Planned
