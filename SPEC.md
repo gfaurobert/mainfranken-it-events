@@ -138,16 +138,16 @@ Build an **agent-first portal for discovering events**. End users interact throu
 
 **Actor:** User agent (on behalf of authenticated human)
 
-**Goal:** Start a connection handshake with another person at the same event.
+**Goal:** Start a connection handshake with another person.
 
-**Description:** User A is at an event and wants to connect with User B (e.g. Martin). User A tells their agent: *"I want to connect with Martin at this event — give me a code."* The agent requests an OTP via MCP. User A shares that short code with Martin in person (or verbally).
+**Description:** User A wants to connect with User B (e.g. Martin). User A tells their agent: *"I want to connect with Martin — give me a code."* The agent requests an OTP via MCP. User A shares that short code with Martin in person (or verbally).
 
 **Acceptance criteria:**
 
 - OTP is short, human-friendly (e.g. 4–6 digits).
-- OTP is scoped to a specific event and initiating user.
+- OTP is scoped to the initiating user only (not tied to a specific event).
 - OTP expires after a configurable TTL.
-- Only one active OTP per initiator per event at a time (or clearly defined override behavior).
+- Only one active OTP per initiator at a time (or clearly defined override behavior).
 
 ---
 
@@ -157,13 +157,14 @@ Build an **agent-first portal for discovering events**. End users interact throu
 
 **Goal:** Link two users in the database so they are connected.
 
-**Description:** User B (Martin) tells their agent: *"I want to connect with Gregor; the code is 1234."* The agent submits the OTP via MCP. If valid, the system creates a bidirectional connection between Gregor and Martin, typically in the context of the shared event.
+**Description:** User B (Martin) tells their agent: *"I want to connect with Gregor; the code is 1234."* The agent submits the OTP via MCP. If valid, the system creates a bidirectional connection between Gregor and Martin.
 
 **Acceptance criteria:**
 
-- Valid OTP + matching event context links both users.
-- Invalid, expired, or wrong-event OTPs are rejected with a clear error.
-- Connection is persisted and visible to both users' agents in future queries.
+- Valid OTP links both users.
+- Invalid or expired OTPs are rejected with a clear error.
+- Connection persists until explicitly removed (disconnect).
+- Connection is visible to both users' agents in future queries.
 - A user cannot connect to themselves.
 
 ---
