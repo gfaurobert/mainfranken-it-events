@@ -1,0 +1,338 @@
+# Quellen-Registry für die Mainfranken-IT-Events-Pipeline.
+# type: ical | jsonld | confstech | html
+# active:false = bekannte Quelle, aber aktuell nicht ingestierbar (leerer Feed,
+#                JS/headless nötig, oder veraltet) — für späteres Re-Crawl/Headless.
+# Der `verify`-Kommentar dokumentiert die letzte manuelle Verifikation (2026-06-25).
+sources:
+  # --- Makerspaces / Community (iCal, deterministisch) ---
+  - name: Schaffenburg e.V.
+    url: https://schaffenburg.org/calendar/noopenspace.ics
+    type: ical
+    region: Aschaffenburg
+    organizer: Schaffenburg e.V.
+    active: true
+  - name: Nerd2Nerd / Chaostreff Würzburg
+    url: https://owncloud.nerd2nerd.org/remote.php/dav/public-calendars/Gkj6PZsq35MLdQZF?export
+    type: ical
+    region: Würzburg
+    organizer: Nerd2Nerd e.V. / FabLab Würzburg
+    active: true
+    # verify: 33 VEVENT, aktiv gepflegt bis 2026 (UserMeeting 2026-06-25)
+
+  # --- Meetup-Gruppen (iCal: /<slug>/events/ical/) ---
+  - name: Meetup WUE.tech
+    url: https://www.meetup.com/wue-tech/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: WUE.tech
+    active: true
+  - name: Meetup Modern Software Development Würzburg
+    url: https://www.meetup.com/wuerzburg-software-development/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: Modern Software Development
+    active: true
+  - name: Meetup Würzburg DATA & ANALYTICS
+    url: https://www.meetup.com/wurzburg-data-analytics-meetup/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: Würzburg DATA & ANALYTICS Meetup
+    active: true
+    # verify: VEVENT=1 (27. D&A Meetup i.R. AI Week, 2026-06-25)
+  - name: Meetup WPMeetup Würzburg
+    url: https://www.meetup.com/wuerzburg-wordpress-meetup/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: WPMeetup Würzburg
+    active: true
+    # verify: VEVENT=1 (WordPress Biergarten Edition, 2026-07-21)
+  - name: Meetup Agile Usergroup Unterfranken
+    url: https://www.meetup.com/agile-usergroup-unterfranken/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: Agile Usergroup Unterfranken (Mayflower GmbH)
+    active: true
+    # verify: VEVENT=1 (KI sicher nutzen für Nicht-Techies, 2026-07-14)
+  - name: Meetup DevOps Würzburg Mainfranken
+    url: https://www.meetup.com/DevOps-Wuerzburg-Mainfranken/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: DevOps Würzburg Mainfranken
+    active: true
+    # verify: Etablierte Gruppe (Slug DevOps-Wuerzburg-Mainfranken, 522+ Mitglieder, 2.
+    #         Dienstag/Monat). Meetup-Bot-Schutz blockt WebFetch → VEVENT-Zahl beim ersten
+    #         echten Ingest gegenprüfen. Stand 2026-06-25.
+
+  # --- Hochschulen & Forschung (HTML → LLM-Extractor) ---
+  - name: Uni Würzburg – Institut für Informatik
+    url: https://www.informatik.uni-wuerzburg.de/aktuelles/veranstaltungen-und-termine/
+    type: html
+    region: Würzburg
+    organizer: JMU – Institut für Informatik
+    active: true
+    # verify: Kolloquium 2026-07-08, Sommer Expo 2026-07-17 im Roh-HTML
+  - name: THWS Fakultät Informatik und Wirtschaftsinformatik
+    url: https://fiw.thws.de/termine/
+    type: html
+    region: Würzburg
+    organizer: THWS (FIW)
+    active: true
+    # verify: Transforming Media x THWS 2026-07-07 im Roh-HTML
+  - name: THWS CAIRO – Center for AI & Robotics
+    url: https://www.thws.de/forschung/institute/cairothws/termine/
+    type: html
+    region: Würzburg
+    organizer: THWS – CAIRO
+    active: true
+  - name: TH Aschaffenburg – Veranstaltungen
+    url: https://www.th-ab.de/hochschule/aktuelles/veranstaltungen/infoabende/
+    type: html
+    region: Aschaffenburg
+    organizer: TH Aschaffenburg
+    active: true
+
+  # --- Kammern, Gründer- & Digitalzentren (HTML → LLM-Extractor) ---
+  - name: ZDI Mainfranken
+    url: https://www.zdi-mainfranken.de/events/
+    type: html
+    region: Würzburg
+    organizer: ZDI Mainfranken
+    active: true
+  - name: HWK Unterfranken – Veranstaltungen
+    url: https://www.hwk-ufr.de/artikel/aktuelle-veranstaltungen-webinare-und-workshops-78,0,6052.html
+    type: html
+    region: Unterfranken
+    organizer: Handwerkskammer für Unterfranken
+    active: true
+    # verify: Cybersecurity-Webinar 2026-06-26, Netzwerktreffen KI 2026-07-14
+  - name: Startbahn27 Schweinfurt
+    url: https://startbahn27.de/news-events
+    type: html
+    region: Schweinfurt
+    organizer: Startbahn27 / Gründungsallianz Schweinfurt
+    active: true
+  - name: Gründerzentren Würzburg (IGZ/TGZ)
+    url: https://www.gruenderzentren-wuerzburg.de/gruenderzentren/veranstaltungen/index.html
+    type: html
+    region: Würzburg
+    organizer: Gründerzentren Würzburg
+    active: true
+    # verify: ScaleUP 2026-07-14; aggregiert teils ZDI → content_hash-Dedup greift
+  - name: Digitales Gründerzentrum Aschaffenburg (DGZ)
+    url: https://www.dgz-ab.de/event
+    type: html
+    region: Aschaffenburg
+    organizer: Digitales Gründerzentrum Aschaffenburg (ZENTEC)
+    active: true
+  - name: Region Mainfranken GmbH
+    url: https://mainfranken.odoo.com/event
+    type: html
+    region: Mainfranken
+    organizer: Region Mainfranken GmbH
+    active: true
+    # Deckt auch "Cluster MIND" ab (Clustertreffen laufen über dieselbe Odoo-Event-Plattform).
+  - name: IHK Würzburg-Schweinfurt – Digitalisierung, IT & Technik
+    url: https://www.wuerzburg.ihk.de/digitalisierung-it-und-technik/
+    type: html
+    region: Mainfranken
+    organizer: IHK Würzburg-Schweinfurt
+    active: true
+    # verify: Dated Events im Roh-HTML (AI & Digital Change Manager ab 2026-11-10,
+    #         AutoCAD III 2026-07-07, AutoCAD II 2026-07-16). Stand 2026-06-25.
+    #         Hinweis: allgemeiner /veranstaltungen/-Sweap-Kalender rendert leer (JS).
+  - name: Starthouse Spessart – Events
+    url: https://starthouse.de/events/
+    type: html
+    region: Main-Spessart
+    organizer: Starthouse Spessart (Digitales Gründerzentrum Lohr a.Main)
+    active: true
+    # verify: Pitch Programm 2026-07-08/09, Höhle der Keiler 2026-07-09,
+    #         Beratertag Aktivsenioren 2026-07-16. Stand 2026-06-25.
+  - name: Wirtschaftsjunioren Würzburg – Termine
+    url: https://www.wj-wuerzburg.de/termine/
+    type: html
+    region: Würzburg
+    organizer: Wirtschaftsjunioren Würzburg
+    active: true
+    # verify: Sommerfest Warm-up (Hochseilgarten) + Sommerfest 2026, beide
+    #         2026-07-03, statisch im HTML, kein Login. Stand 2026-06-25.
+
+  # --- Konferenz-Aggregatoren (confs.tech JSON, country=Germany) ---
+  - name: confs.tech (DE)
+    url: https://raw.githubusercontent.com/tech-conferences/conference-data/main/conferences/2026/general.json
+    type: confstech
+    region: Germany
+    active: true
+  - name: confs.tech JavaScript (DE)
+    url: https://raw.githubusercontent.com/tech-conferences/conference-data/main/conferences/2026/javascript.json
+    type: confstech
+    region: Germany
+    active: true
+  - name: Games/Bavaria Events
+    url: https://events.games-bavaria.com/?ical=1
+    type: ical
+    region: Bayern
+    organizer: Games/Bavaria (Verband der bayerischen Games-Branche)
+    active: true
+    # verify: Valider iCal-Feed, 13 VEVENT, ohne Login/JS. Deckt auch "Indie Outpost
+    #         Würzburg" ab (z.B. Indie Outpost Nürnberg 2026-07-06, FOSS GameDev WS
+    #         Nürnberg 2026-06-25). Stand 2026-06-25.
+
+  # --- Überregionale Plattformen (HTML → LLM-Extractor) ---
+  - name: Eventbrite Science & Tech Würzburg
+    url: https://www.eventbrite.de/d/germany--w%C3%BCrzburg/science-and-tech/
+    type: html
+    region: Würzburg
+    organizer: Eventbrite
+    active: true
+  - name: Bitkom – Termine
+    url: https://www.bitkom.org/Termine/index.jsp
+    type: html
+    region: Deutschland
+    organizer: Bitkom e.V.
+    active: true
+  - name: Bayern Innovativ Eventkalender (Digitalisierung)
+    url: https://www.bayern-innovativ.de/events-termine/digitalisierung/events/
+    type: html
+    region: Bayern
+    organizer: Bayern Innovativ GmbH
+    active: true
+    # verify: Mehrere kommende IT-Events im statischen HTML (Xentara Connection Day
+    #         2026-07-01, Halbleiter-Kongress 2026-07-06, TechDays 2026-07-15/16,
+    #         Bavarian Data Summit 2026-10-05). Stand 2026-06-25.
+
+  # --- Community / Maker / Bildung (HTML → LLM-Extractor) ---
+  - name: Linux User Group Würzburg
+    url: https://lug-wuerzburg.de/
+    type: html
+    region: Würzburg
+    organizer: GNU/Linux User Group Würzburg
+    active: true
+    # verify: Kein iCal-Feed; HTML listet kommende Install Partys (u.a. Juli 2026,
+    #         meist im FabLab Würzburg). Stand 2026-06-25.
+  - name: Stadtbücherei Würzburg – Level3
+    url: https://www.wuerzburg.de/themen/kultur-bildung-kulturangebot/stadtbuecherei/medienpdagogik/538987.Level3-Veranstaltungen.html
+    type: html
+    region: Würzburg
+    organizer: Stadtbücherei Würzburg (Level3)
+    active: true
+    # verify: Laufendes Programm (Robotik donnerstags, Maker Dates jeden 3. Dienstag,
+    #         CoderDojo). Stand 2026-06-25.
+  - name: CoderDojo Würzburg
+    url: https://coderdojo-wue.de/
+    type: html
+    region: Würzburg
+    organizer: CoderDojo Würzburg
+    active: true
+    # verify: Nächster Termin Sa 2026-06-27 (Stadtbücherei Würzburg) im HTML.
+    #         Stand 2026-06-25.
+
+  # === Inaktiv: bekannt, aber aktuell nicht ingestierbar ===
+  # Leere Meetup-Feeds (Gruppe existiert, keine kommenden Events) – re-crawlen:
+  - name: Meetup FrankenJS Würzburg
+    url: https://www.meetup.com/front-end-wuerzburg/events/ical/
+    type: ical
+    region: Würzburg
+    organizer: FrankenJS
+    active: false
+  - name: Meetup Web Development Aschaffenburg
+    url: https://www.meetup.com/web-development-aschaffenburg/events/ical/
+    type: ical
+    region: Aschaffenburg
+    organizer: Web Development Aschaffenburg
+    active: false
+  # Veralteter Backup-Feed (Einträge enden 2023):
+  - name: Nerd2Nerd Plone-Feed
+    url: https://www.nerd2nerd.org/events/ics_view
+    type: ical
+    region: Würzburg
+    organizer: Nerd2Nerd e.V.
+    active: false
+  # JS/headless nötig (Events erst im gerenderten DOM) – brauchen Headless-Connector:
+  - name: AI Week Mainfranken
+    url: https://www.ai-week.de/programm.php
+    type: html
+    region: Mainfranken
+    organizer: AI Week Mainfranken
+    active: false
+    headless: true
+  - name: baiosphere – KI-Netzwerk Bayern
+    url: https://baiosphere.org/events/
+    type: html
+    region: Bayern
+    organizer: baiosphere
+    active: false
+    headless: true
+  # Thematisch ideal, aktuell keine kommenden Termine – re-crawlen:
+  - name: GI Regionalgruppe Würzburg
+    url: https://rg-wuerzburg.gi.de/
+    type: html
+    region: Würzburg
+    organizer: Gesellschaft für Informatik – RG Würzburg
+    active: false
+  # Keine dedizierte Event-Seite, nur News/Forschung – re-crawlen falls Kalender entsteht:
+  - name: GRIBS Schweinfurt
+    url: https://www.gribs.de/aktuelles/
+    type: html
+    region: Schweinfurt
+    organizer: GRIBS Gründer-, Innovations- und Beratungszentrum Schweinfurt
+    active: false
+    # verify: Nur News (jüngster Eintrag 2026-06-12, vor Stichtag), kein Eventkalender.
+  - name: CERI – Center für Robotik (THWS Schweinfurt)
+    url: https://robotik.thws.de/
+    type: html
+    region: Schweinfurt
+    organizer: THWS – CERI
+    active: false
+    # verify: Forschungsseite ohne Termin-Unterseite; Events nur sporadisch als Presse.
+  - name: Freifunk Franken – Treffen
+    url: https://wiki.freifunk-franken.de/w/Treffen
+    type: html
+    region: Franken
+    organizer: Freifunk Franken
+    active: false
+    # verify: Nur wiederkehrende Muster + Historie, keine konkreten Datums-Termine,
+    #         kein klarer Würzburg-Bezug (Schwerpunkt Nürnberg/Erlangen).
+  # Einmaliges Jahresevent, nächste Ausgabe abwarten:
+  - name: Accessibility Club Summit
+    url: https://accessibility.club/event/accessibility-club-summit-2026
+    type: html
+    region: Würzburg
+    organizer: Accessibility Club (Tollwerk)
+    active: false
+    # verify: Summit 2026 (2026-05-09/10 an der THWS Würzburg) bereits vorbei; auf
+    #         Summit 2027 re-crawlen (URL dann anpassen). Stand 2026-06-25.
+  # Aktuell leeres Listing – re-crawlen:
+  - name: Hackathon.com Deutschland
+    url: https://www.hackathon.com/country/germany
+    type: html
+    region: Deutschland
+    organizer: Hackathon.com
+    active: false
+    # verify: Crawlbar, aber "no upcoming hackathons in Germany". Stand 2026-06-25.
+  # JS/headless nötig (Listing wird per JavaScript nachgeladen) – Headless-Connector:
+  - name: Digitales Gründerzentrum Bayern – Übersicht
+    url: https://www.gruenderland.bayern/veranstaltungen/
+    type: html
+    region: Bayern
+    organizer: Gründerland Bayern (StMWi / Bayern Innovativ)
+    active: false
+    headless: true
+    # verify: Statisches HTML zeigt nur Filter-Gerüst, Events per JS. Stand 2026-06-25.
+  # Login-Wall – nicht ohne Auth crawlbar:
+  - name: LinkedIn Events Würzburg IT
+    url: https://www.linkedin.com/search/results/events/?keywords=W%C3%BCrzburg%20IT
+    type: html
+    region: Mainfranken
+    organizer: LinkedIn
+    active: false
+    headless: true
+    # verify: Anonyme Besucher sehen nur Sign-in-Maske, kein Event-Listing.
+  # Kein durchsuchbarer öffentlicher Einstieg – einzelne Shop-URLs bei Bedarf direkt erfassen:
+  - name: Pretix Mainfranken (Community-Ticketing)
+    url: https://pretix.eu/
+    type: html
+    region: Mainfranken
+    organizer: pretix / rami.io GmbH
+    active: false
+    # verify: Kein globales Event-Directory; Events nur unter bekannten Organizer-Shop-URLs.

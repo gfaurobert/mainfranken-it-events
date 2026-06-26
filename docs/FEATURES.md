@@ -10,9 +10,9 @@ Simple tracker for the Mainfranken IT-Events portal (hackathon scope).
 | Get event by ID | MCP tool (`get_event`) | **Done** | Same as `GET /events/:id` |
 | Health check | REST (`GET /health`) | **Done** | `{ "status": "ok" }` |
 | Seed / dummy data | Supabase | **Done** | 6 events in `events` table |
-| Auth (human + agent PAT) | MCP + API | **Done** | `register_user` (MCP), `POST /auth/register` (REST); PAT emailed; `Authorization: Bearer mfe_pat_…` |
-| RSVP | MCP + API | **Done** | `set_rsvp`, `list_my_rsvps`, `remove_rsvp` (MCP); `GET/PUT/DELETE /me/rsvps` (REST); requires PAT |
 | Event ingest | Python ADK → API | Planned | Colleague; `POST /ingest/events` later |
+| RSVP | MCP + API | Planned | Needs auth |
 | Connect via OTP | MCP + API | Planned | Needs auth |
+| Auth (human + agent PAT) | MCP + API | Planned | Phase 2 |
 
 **Legend:** Done · Next · Planned

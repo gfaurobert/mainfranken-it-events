@@ -102,13 +102,15 @@
 - `id`, `user_id`, `token_hash`, `label`, `created_at`, `revoked_at`.
 
 ### `rsvps`
-- `user_id`, `event_id`, `status` (`going` | `interested`), `created_at`. PK: (user_id, event_id).
+- `user_id`, `event_id`, `status` (`going` | `interested` | `cancelled`), `created_at`. PK: (user_id, event_id). `cancelled` deckt UC-5 (Teilnahme zurückziehen) ab.
 
 ### `connections`
-- `user_a`, `user_b`, `created_at`. Ungerichtet — immer als Paar mit `user_a < user_b` gespeichert.
+- `user_a`, `user_b`, `event_id` (optionaler Kontext), `created_at`. Ungerichtet — immer als Paar mit `user_a < user_b` gespeichert (DB-Check erzwingt das).
+- **Entscheidung:** Connection ist **global** (eine Zeile pro Paar). `event_id` hält nur den *ersten* Verbindungskontext. Erfüllt sowohl unser globales Modell als auch die event-bezogene Sicht der Partner-SPEC.
 
 ### `connection_otps`
-- `code`, `issuer_id`, `expires_at` (+15 min), `used_at`, `used_by`. Einmal-Code.
+- `id`, `code`, `issuer_id`, `event_id` (optionaler Kontext), `expires_at` (+15 min), `used_at`, `used_by`. Einmal-Code.
+- **Unique-Constraints:** max. ein aktiver Code pro Issuer *und* max. ein aktiver Code pro `code` (jeweils `where used_at is null`). `core/` erzeugt Codes mit Retry bei Konflikt.
 
 ### RLS (Row-Level-Security)
 - `events`: öffentlich lesbar; Schreibzugriff nur Admin/Ingest (Service-Token).
@@ -164,8 +166,25 @@ Konsens = Code-Eingabe. Abgelehnt werden: Selbst-Verbindung, abgelaufene und ber
 - **`core` ist die Testschicht.** Unit-Tests für: Suche/Filter-Kombinationen, OTP-Lebenszyklus (Ablauf, Einmaligkeit, Selbst-Verbindung, Doppel-Connection), Sichtbarkeitsregeln (nur freigegebene Felder).
 - MCP- und API-Adapter sind dünn → wenige Integrationstests, die den Durchstich prüfen.
 
+## Implementierungshinweise (aus DB-Review, für `core/` und Ingest)
+
+- **Profil-Anlage:** Es gibt **keinen** Auto-Trigger, der bei Signup einen `profiles`-Eintrag erzeugt. `core/` muss das Profil per Upsert anlegen, bevor RSVP/Connection darauf zugreifen.
+- **`rls_auto_enable`-Trigger:** Jede **neue** `public`-Tabelle bekommt automatisch RLS aktiviert → ohne Policy/Service-Role still „deny-all". Bei künftigen Tabellen mitdenken.
+- **`redeem_connection_otp`:** als `ON CONFLICT DO NOTHING` umsetzen — ein zweites Einlösen für ein bereits verbundenes Paar darf nicht crashen (Connection ist global, PK pro Paar).
+- **OTP-Erzeugung:** Codes mit Retry bei Unique-Konflikt erzeugen (aktiver Code pro Issuer *und* pro `code` ist eindeutig).
+- **Ingest-Pflicht:** `content_hash` ist nullable, aber die ADK-Pipeline muss ihn **immer** setzen (sonst kein Dedupe). Rezept: `md5(lower(title) || '|' || starts_at || '|' || lower(city))`.
+- **Suche:** Tag-/Token-Matching statt naivem `ilike '%x%'` (sonst False Positives wie „Networking" ↔ „ki").
+
+## Stand der Umsetzung (Phase 1 erledigt)
+
+- Supabase-Schema + RLS + Hardening live angelegt (Migrationen unter `supabase/migrations/`).
+- Seed-Events unter `supabase/seed.sql`.
+- Security-Advisor sauber (nur gewollte `rls_enabled_no_policy`-INFO auf persönlichen Tabellen).
+
 ## Offene Punkte / Annahmen
 
-- Genaues `content_hash`-Rezept wird in Phase 1 festgelegt (Vorschlag: normalisierter `title` + `starts_at` + `city`).
-- Standard-Branch beim ersten Push: `main` (statt `master`).
-- Supabase-Projekt + Secrets (URL, anon key, service key) werden außerhalb des Repos (`.env`) gehalten.
+- ~~`content_hash`-Rezept~~ → festgelegt: `md5(lower(title) || '|' || starts_at || '|' || lower(city))`.
+- ~~Standard-Branch~~ → `main`.
+- ~~OTP/Connection event-scoped vs. global~~ → entschieden: global mit optionalem `event_id`-Kontext.
+- Supabase-Projekt + Secrets (URL, keys, PAT) werden außerhalb des Repos (`.env`) gehalten.
+- Semantische Suche (Embeddings/pgvector) bleibt Stretch — `embedding`-Spalte wird erst mit gewähltem Embedding-Modell ergänzt.

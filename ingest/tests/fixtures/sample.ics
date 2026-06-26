@@ -1,0 +1,12 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:evt-123@schaffenburg.org
+SUMMARY:Linux Stammtisch
+DTSTART:20260701T180000Z
+DTEND:20260701T200000Z
+LOCATION:Schaffenburg, Aschaffenburg
+URL:https://schaffenburg.org/event/123
+DESCRIPTION:Offener Abend
+END:VEVENT
+END:VCALENDAR

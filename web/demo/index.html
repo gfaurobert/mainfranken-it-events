@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f4f7" />
+    <title>IT-Events - IT-Verband Mainfranken</title>
+    <meta
+      name="description"
+      content="Hier finden Sie alle zukünftigen IT-Events der Region Mainfranken."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-header__logo" href="https://www.it-mainfranken.org/" aria-label="IT-Verband Mainfranken">
+          <img
+            src="https://www.it-mainfranken.org/wp-content/uploads/2024/09/ITV_Logo_RZ_sRGB_standard-1024x471.webp"
+            alt="IT-Verband Mainfranken"
+            width="1024"
+            height="471"
+            loading="eager"
+          />
+        </a>
+
+        <button
+          class="site-header__toggle"
+          type="button"
+          aria-label="Menü"
+          aria-expanded="false"
+          aria-controls="site-nav"
+        >
+          <span></span>
+        </button>
+
+        <nav class="site-header__nav" id="site-nav" aria-label="Hauptnavigation">
+          <ul class="site-header__menu">
+            <li><a href="https://www.it-mainfranken.org/">IT-Verband</a></li>
+            <li><a class="is-active" href="./index.html">IT-Events</a></li>
+            <li><a href="https://www.it-mainfranken.org/kontakt/">Kontakt</a></li>
+          </ul>
+          <a class="site-header__btn" href="https://www.it-mainfranken.org/mitglied-werden/">
+            Mitglied werden
+          </a>
+          <div class="site-header__social">
+            <span>News auf:</span>
+            <a href="https://www.linkedin.com/company/itverbandmainfranken" aria-label="LinkedIn">
+              <i class="fa-brands fa-linkedin-in" aria-hidden="true"></i>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="section section--intro">
+        <div class="section__inner">
+          <h1 class="page-title">IT-Events in der Region</h1>
+          <p class="page-intro">
+            Hier finden Sie alle zukünftigen IT-Events der Region. Wir freuen uns auf Ihren Besuch!
+          </p>
+        </div>
+      </section>
+
+      <section class="section section--events">
+        <div class="section__inner">
+          <div class="events-widget" id="events-widget" aria-live="polite">
+            <div class="events-widget__loading">
+              <p>Veranstaltungen werden geladen …</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p>
+          © 2026 IT-Verband Mainfranken e. V. Erstellt von
+          <a href="https://www.wodanio.com">Wodanio</a> mit ❤️
+        </p>
+        <ul class="site-footer__menu">
+          <li><a href="https://www.it-mainfranken.org/mitglied-werden/">Mitglied werden</a></li>
+          <li>
+            <a
+              href="https://www.it-mainfranken.org/wp-content/uploads/2025/06/IT-Verband-Satzung-1.3a.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Satzung
+            </a>
+          </li>
+          <li><a href="https://www.it-mainfranken.org/impressum/">Impressum</a></li>
+          <li><a href="https://www.it-mainfranken.org/datenschutzerklaerung/">Datenschutzerklärung</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <button class="back-to-top" type="button" aria-label="Zurück nach oben">
+      <i class="fa-solid fa-angle-up" aria-hidden="true"></i>
+    </button>
+
+    <script src="./events.js" defer></script>
+  </body>
+</html>
