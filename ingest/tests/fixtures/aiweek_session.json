@@ -1,0 +1,80 @@
+{
+  "format": "0.5.4",
+  "sessions": [
+    {
+      "id": 66,
+      "start": "2026-06-22T09:00:00+02:00",
+      "end": "2026-06-22T10:00:00+02:00",
+      "cancelled": false,
+      "highlight": false,
+      "onlineOnly": true,
+      "host": {"id": 24, "name": "finception GmbH"},
+      "title": "Fake-Rechnungen entlarven",
+      "description": {"short": "Wie KI verdächtige Rechnungen erkennt.", "long": "Langtext ..."},
+      "links": {"event": "https://gamma.app/docs/Fake-Rechnungen-entlarven-c6dqh1sakjlhg6e"},
+      "channel": {"id": 1, "sort": 10, "name": "Tech & Science"}
+    },
+    {
+      "id": 58,
+      "start": "2026-06-22T11:00:00+02:00",
+      "end": "2026-06-22T12:30:00+02:00",
+      "cancelled": false,
+      "highlight": false,
+      "onlineOnly": false,
+      "host": {"id": 30, "name": "JUN Legal GmbH"},
+      "title": "KI-Code: Ship it or get sued?",
+      "description": {"short": "Wem gehört der Code aus der KI?"},
+      "links": {"event": "https://example.org/ki-code"},
+      "location": {"name": "JUN Legal GmbH", "streetNo": "Salvatorstraße 21",
+                   "zipcode": "97074", "city": "Würzburg", "isAccessible": true,
+                   "lat": 49.792, "lng": 9.953},
+      "channel": {"id": 1, "sort": 10, "name": "Tech & Science"}
+    },
+    {
+      "id": 75,
+      "start": "2026-06-24T14:00:00+02:00",
+      "end": "2026-06-24T16:00:00+02:00",
+      "cancelled": false,
+      "highlight": true,
+      "onlineOnly": false,
+      "host": {"id": 41, "name": "Starthouse Spessart"},
+      "title": "KI im Maschineneinsatz",
+      "description": {"short": "KI in der Produktion."},
+      "links": {"event": "https://example.org/ki-maschine"},
+      "location": {"name": "Starthouse Spessart", "streetNo": "Vorstadtstraße 12",
+                   "zipcode": "97816", "city": "Lohr a.Main", "isAccessible": true,
+                   "lat": 49.99, "lng": 9.57},
+      "channel": {"id": 1, "sort": 10, "name": "Tech & Science"}
+    },
+    {
+      "id": 101,
+      "start": "2026-06-22T10:00:00+02:00",
+      "end": "2026-06-22T10:45:00+02:00",
+      "cancelled": true,
+      "highlight": false,
+      "onlineOnly": true,
+      "host": {"id": 12, "name": "RAUSCH Technology GmbH"},
+      "title": "Anomalie! Und nun?",
+      "description": {"short": "Abgesagtes Event."},
+      "links": {},
+      "channel": {"id": 1, "sort": 10, "name": "Tech & Science"}
+    },
+    {
+      "id": 200,
+      "start": "2026-06-25T18:00:00+02:00",
+      "end": "2026-06-25T19:00:00+02:00",
+      "cancelled": false,
+      "highlight": false,
+      "onlineOnly": true,
+      "host": {"id": 50, "name": "Ohne Link e.V."},
+      "title": "Event ohne Detaillink",
+      "description": {"short": "Kein links.event vorhanden."},
+      "links": {},
+      "channel": {"id": 3, "sort": 30, "name": "Business & New Work"}
+    }
+  ],
+  "channels": [
+    {"id": 1, "sort": 10, "name": "Tech & Science"},
+    {"id": 3, "sort": 30, "name": "Business & New Work"}
+  ]
+}

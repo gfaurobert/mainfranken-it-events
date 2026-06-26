@@ -3,18 +3,20 @@ import json
 import re
 import sys
 from datetime import datetime, timedelta, timezone
+
 import httpx
-from ingest.models import SourceConfig, RawEvent, NormalizedEvent
-from ingest.geo import classify_region
-from ingest.registry.loader import load_sources
-from ingest.connectors import ical, confstech, jsonld
-from ingest.connectors.fetch import fetch_text, html_to_text
+
 from ingest.agents.extractor import build_extractor
-from ingest.agents.normalizer import build_tagger, finalize, TaggedItem, TaggerOutput
+from ingest.agents.normalizer import TaggedItem, TaggerOutput, build_tagger, finalize
 from ingest.agents.runner import run_structured
+from ingest.connectors import aiweek, confstech, ical, jsonld
+from ingest.connectors.fetch import FetchError, fetch_rendered, fetch_text, html_to_text
 from ingest.dedup import dedupe
-from ingest.sink import make_sink
+from ingest.geo import classify_region
+from ingest.models import NormalizedEvent, RawEvent, SourceConfig
+from ingest.registry.loader import load_sources
 from ingest.report import build_report
+from ingest.sink import make_sink
 
 
 def _ensure_aware(dt: datetime | None) -> datetime | None:
@@ -48,18 +50,23 @@ def _with_source_defaults(e: RawEvent, src: SourceConfig) -> RawEvent:
 
 
 async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
-    # Feed einmal laden. Ein nicht erreichbarer/404-Feed (in der Praxis häufig:
-    # Gruppe ohne Termine, Seite umgezogen) ist KEIN harter Pipeline-Fehler —
-    # die Quelle liefert dann 0 Events. Echte Parse-/LLM-Fehler propagieren.
+    # Feed einmal laden. Headless-Quellen (Listing erst per JS im DOM) über einen
+    # gerenderten Browser-Fetch, alle anderen statisch. Ein nicht erreichbarer/404-
+    # Feed oder ein fehlgeschlagenes Rendern (in der Praxis häufig: Gruppe ohne
+    # Termine, Seite umgezogen, Browser-Engine fehlt) ist KEIN harter Pipeline-
+    # Fehler — die Quelle liefert dann 0 Events. Echte Parse-/LLM-Fehler propagieren.
+    fetcher = fetch_rendered if src.headless else fetch_text
     try:
-        text = await fetch_text(src.url)
-    except httpx.HTTPError as e:
+        text = await fetcher(src.url)
+    except (httpx.HTTPError, FetchError) as e:
         print(f"[ingest] Feed nicht erreichbar – übersprungen: {src.name} ({e})",
               file=sys.stderr)
         return [], "auto"
 
     if src.type == "ical":
         events, status = ical.parse_ical(text, src), "auto"
+    elif src.type == "aiweek":
+        events, status = aiweek.parse_aiweek(text, src), "auto"
     elif src.type == "confstech":
         events, status = confstech.parse_confstech(text, src), "auto"
     elif src.type == "jsonld":

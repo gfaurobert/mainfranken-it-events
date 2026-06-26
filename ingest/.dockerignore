@@ -1,0 +1,12 @@
+# Build-Context schlank halten: virtuelle Umgebungen, Caches und Tests gehören
+# nicht ins Image (uv baut die Umgebung im Container neu).
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+tests
+.git
+.env
+.env.*
+!.env.example
