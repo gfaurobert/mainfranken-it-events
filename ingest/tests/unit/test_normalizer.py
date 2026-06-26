@@ -8,7 +8,9 @@ DT = datetime(2026, 7, 1, 18, tzinfo=timezone.utc)
 def test_tagger_configured():
     agent = build_tagger()
     assert agent.name == "tagger"
-    assert agent.output_schema is TaggerOutput
+    # output_schema absichtlich None (siehe extractor): Struktur per Prompt.
+    assert agent.output_schema is None
+    assert "JSON" in agent.instruction
 
 
 def test_finalize_merges_tags_and_sets_hash():

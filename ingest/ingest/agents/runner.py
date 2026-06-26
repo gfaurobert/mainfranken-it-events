@@ -5,6 +5,32 @@ from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 
+def _parse_json_obj(text: str) -> dict | None:
+    """Parse a JSON object from model text, tolerant of markdown code fences
+    and surrounding prose (reasoning models without response_format may wrap
+    the JSON). Returns the dict, or None if no JSON object is found."""
+    t = text.strip()
+    if t.startswith("```"):
+        t = t[3:]
+        if t[:4].lower() == "json":
+            t = t[4:]
+        if t.endswith("```"):
+            t = t[:-3]
+        t = t.strip()
+    candidates = [t]
+    start, end = t.find("{"), t.rfind("}")
+    if start != -1 and end > start:
+        candidates.append(t[start : end + 1])
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+    return None
+
+
 def _structured_from_events(events) -> dict:
     """Extract structured JSON from a list of ADK events.
 
@@ -38,12 +64,9 @@ def _structured_from_events(events) -> dict:
         )
         if not text.strip():
             continue
-        try:
-            parsed = json.loads(text)
-            if isinstance(parsed, dict):
-                result = parsed
-        except (json.JSONDecodeError, ValueError):
-            pass
+        parsed = _parse_json_obj(text)
+        if parsed is not None:
+            result = parsed
     return result
 
 

@@ -4,7 +4,10 @@ from ingest.agents.extractor import build_extractor, ExtractedEvent, ExtractorOu
 def test_extractor_is_configured():
     agent = build_extractor()
     assert agent.name == "html_extractor"
-    assert agent.output_schema is ExtractorOutput
+    # output_schema absichtlich None: DeepSeek/OpenCode Go kann kein
+    # response_format mit JSON-Schema; Struktur kommt per Prompt.
+    assert agent.output_schema is None
+    assert "JSON" in agent.instruction
 
 
 def test_extractor_output_schema():

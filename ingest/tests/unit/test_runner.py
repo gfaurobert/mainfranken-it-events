@@ -64,3 +64,15 @@ def test_last_structured_event_wins():
 def test_empty_event_list():
     """Empty event list → {}."""
     assert _structured_from_events([]) == {}
+
+
+def test_markdown_code_fence_is_stripped():
+    """Reasoning models often wrap JSON in ```json fences — strip them."""
+    event = _make_event(text='```json\n{"ok": true}\n```')
+    assert _structured_from_events([event]) == {"ok": True}
+
+
+def test_json_extracted_from_surrounding_prose():
+    """Leading prose before the JSON object must not break parsing."""
+    event = _make_event(text='Hier ist das Ergebnis: {"answer": 42} — fertig.')
+    assert _structured_from_events([event]) == {"answer": 42}
