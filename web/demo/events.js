@@ -59,7 +59,7 @@ function normalizeEvent(event) {
     locationName,
     address,
     zip,
-    url: event.url || "#",
+    url: event.url || event.source_url || event.sourceUrl || "#",
     organizer: event.organizer || "",
     tags: Array.isArray(event.tags) ? event.tags : [],
     isFree: event.is_free ?? event.isFree ?? true,

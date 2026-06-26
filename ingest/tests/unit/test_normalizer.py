@@ -45,3 +45,20 @@ def test_llm_is_online_takes_precedence_over_raw():
     tagged = {0: TaggedItem(index=0, tags=["webinar"], is_online=True)}
     out = finalize(raw, tagged)
     assert out[0].is_online is True
+
+
+def test_finalize_falls_back_to_source_url_when_url_missing():
+    """Jedes Event braucht einen Link. Fehlt die spezifische Event-URL,
+    wird die Quell-URL als Fallback gesetzt (sonst kein Details-Link im UI)."""
+    raw = [RawEvent(title="X", starts_at=DT, source="zdi", url=None,
+                    source_url="https://zdi-mainfranken.de/events")]
+    out = finalize(raw, {})
+    assert out[0].url == "https://zdi-mainfranken.de/events"
+
+
+def test_finalize_keeps_specific_url_over_source_url():
+    raw = [RawEvent(title="X", starts_at=DT, source="zdi",
+                    url="https://zdi-mainfranken.de/events/42",
+                    source_url="https://zdi-mainfranken.de/events")]
+    out = finalize(raw, {})
+    assert out[0].url == "https://zdi-mainfranken.de/events/42"

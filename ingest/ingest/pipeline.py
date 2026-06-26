@@ -4,7 +4,8 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 import httpx
-from ingest.models import SourceConfig, RawEvent
+from ingest.models import SourceConfig, RawEvent, NormalizedEvent
+from ingest.geo import classify_region
 from ingest.registry.loader import load_sources
 from ingest.connectors import ical, confstech, jsonld
 from ingest.connectors.fetch import fetch_text, html_to_text
@@ -123,6 +124,30 @@ def is_upcoming(event: RawEvent, window: tuple[datetime, datetime]) -> bool:
     return start <= event.starts_at <= end
 
 
+def apply_geo_filter(events: list[NormalizedEvent]) -> list[NormalizedEvent]:
+    """Begrenzt die Events geografisch auf Mainfranken.
+
+    Viele Quellen liefern überregional. Regeln:
+    - Online-Events: immer behalten (ortsunabhängig, für die Zielgruppe relevant).
+    - eindeutig außerhalb Mainfrankens: verwerfen.
+    - eindeutig Mainfranken: behalten.
+    - Ort unklar: behalten, aber zur manuellen Sichtung auf 'needs_review' setzen
+      (kein automatisches Verwerfen → kein Datenverlust durch Fehlklassifikation).
+    """
+    kept: list[NormalizedEvent] = []
+    for e in events:
+        if e.is_online:
+            kept.append(e)
+            continue
+        region = classify_region(e.city, e.location_name)
+        if region == "outside":
+            continue
+        if region == "unknown" and e.review_status == "auto":
+            e = e.model_copy(update={"review_status": "needs_review"})
+        kept.append(e)
+    return kept
+
+
 # Sammel-Parallelität begrenzen: html-Quellen lösen je einen LLM-Call aus;
 # zu viele gleichzeitig überlasten den Provider (Rate-Limit/Timeouts).
 COLLECT_CONCURRENCY = 6
@@ -162,6 +187,7 @@ async def run_ingest(sink=None, sources: list[SourceConfig] | None = None) -> di
     for i, e in enumerate(raw):
         normalized.extend(finalize([e], {0: tagged[i]} if i in tagged else {},
                                     default_status=status_map.get(i, "auto")))
-    deduped = dedupe(normalized)
+    geo_filtered = apply_geo_filter(normalized)
+    deduped = dedupe(geo_filtered)
     res = sink.upsert_batch(deduped)
     return build_report(len(sources), len(raw), len(deduped), res.inserted, errors)
