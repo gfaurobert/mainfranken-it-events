@@ -32,6 +32,11 @@ dev = [
 ]
 
 [project.optional-dependencies]
+headless = [
+    # Browser-Rendering für JS-lastige Quellen (fetch_rendered). Schwere, optionale
+    # Dependency: nach `uv sync --extra headless` noch `uv run playwright install chromium`.
+    "playwright>=1.40",
+]
 eval = [
     "google-adk[eval]>=2.0.0,<3.0.0",
     "google-cloud-aiplatform[evaluation]>=1.156.0",

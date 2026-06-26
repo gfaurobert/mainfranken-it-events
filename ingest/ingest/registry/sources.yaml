@@ -227,6 +227,30 @@ sources:
     # verify: Nächster Termin Sa 2026-06-27 (Stadtbücherei Würzburg) im HTML.
     #         Stand 2026-06-25.
 
+  # --- Headless/JS-gerendert (Listing erst im DOM, fetch_rendered via Playwright) ---
+  - name: AI Week Mainfranken
+    url: https://www.ai-week.de/programm.php
+    type: html
+    region: Mainfranken
+    organizer: AI Week Mainfranken
+    active: true
+    headless: true
+  - name: baiosphere – KI-Netzwerk Bayern
+    url: https://baiosphere.org/events/
+    type: html
+    region: Bayern
+    organizer: baiosphere
+    active: true
+    headless: true
+  - name: Digitales Gründerzentrum Bayern – Übersicht
+    url: https://www.gruenderland.bayern/veranstaltungen/
+    type: html
+    region: Bayern
+    organizer: Gründerland Bayern (StMWi / Bayern Innovativ)
+    active: true
+    headless: true
+    # verify: Statisches HTML zeigt nur Filter-Gerüst, Events per JS. Stand 2026-06-25.
+
   # === Inaktiv: bekannt, aber aktuell nicht ingestierbar ===
   # Leere Meetup-Feeds (Gruppe existiert, keine kommenden Events) – re-crawlen:
   - name: Meetup FrankenJS Würzburg
@@ -248,21 +272,6 @@ sources:
     region: Würzburg
     organizer: Nerd2Nerd e.V.
     active: false
-  # JS/headless nötig (Events erst im gerenderten DOM) – brauchen Headless-Connector:
-  - name: AI Week Mainfranken
-    url: https://www.ai-week.de/programm.php
-    type: html
-    region: Mainfranken
-    organizer: AI Week Mainfranken
-    active: false
-    headless: true
-  - name: baiosphere – KI-Netzwerk Bayern
-    url: https://baiosphere.org/events/
-    type: html
-    region: Bayern
-    organizer: baiosphere
-    active: false
-    headless: true
   # Thematisch ideal, aktuell keine kommenden Termine – re-crawlen:
   - name: GI Regionalgruppe Würzburg
     url: https://rg-wuerzburg.gi.de/
@@ -310,16 +319,7 @@ sources:
     organizer: Hackathon.com
     active: false
     # verify: Crawlbar, aber "no upcoming hackathons in Germany". Stand 2026-06-25.
-  # JS/headless nötig (Listing wird per JavaScript nachgeladen) – Headless-Connector:
-  - name: Digitales Gründerzentrum Bayern – Übersicht
-    url: https://www.gruenderland.bayern/veranstaltungen/
-    type: html
-    region: Bayern
-    organizer: Gründerland Bayern (StMWi / Bayern Innovativ)
-    active: false
-    headless: true
-    # verify: Statisches HTML zeigt nur Filter-Gerüst, Events per JS. Stand 2026-06-25.
-  # Login-Wall – nicht ohne Auth crawlbar:
+  # Login-Wall – nicht ohne Auth crawlbar (auch headless löst die Sign-in-Maske nicht):
   - name: LinkedIn Events Würzburg IT
     url: https://www.linkedin.com/search/results/events/?keywords=W%C3%BCrzburg%20IT
     type: html

@@ -8,7 +8,7 @@ from ingest.models import SourceConfig, RawEvent, NormalizedEvent
 from ingest.geo import classify_region
 from ingest.registry.loader import load_sources
 from ingest.connectors import ical, confstech, jsonld
-from ingest.connectors.fetch import fetch_text, html_to_text
+from ingest.connectors.fetch import FetchError, fetch_rendered, fetch_text, html_to_text
 from ingest.agents.extractor import build_extractor
 from ingest.agents.normalizer import build_tagger, finalize, TaggedItem, TaggerOutput
 from ingest.agents.runner import run_structured
@@ -48,12 +48,15 @@ def _with_source_defaults(e: RawEvent, src: SourceConfig) -> RawEvent:
 
 
 async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
-    # Feed einmal laden. Ein nicht erreichbarer/404-Feed (in der Praxis häufig:
-    # Gruppe ohne Termine, Seite umgezogen) ist KEIN harter Pipeline-Fehler —
-    # die Quelle liefert dann 0 Events. Echte Parse-/LLM-Fehler propagieren.
+    # Feed einmal laden. Headless-Quellen (Listing erst per JS im DOM) über einen
+    # gerenderten Browser-Fetch, alle anderen statisch. Ein nicht erreichbarer/404-
+    # Feed oder ein fehlgeschlagenes Rendern (in der Praxis häufig: Gruppe ohne
+    # Termine, Seite umgezogen, Browser-Engine fehlt) ist KEIN harter Pipeline-
+    # Fehler — die Quelle liefert dann 0 Events. Echte Parse-/LLM-Fehler propagieren.
+    fetcher = fetch_rendered if src.headless else fetch_text
     try:
-        text = await fetch_text(src.url)
-    except httpx.HTTPError as e:
+        text = await fetcher(src.url)
+    except (httpx.HTTPError, FetchError) as e:
         print(f"[ingest] Feed nicht erreichbar – übersprungen: {src.name} ({e})",
               file=sys.stderr)
         return [], "auto"
