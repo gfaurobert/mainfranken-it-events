@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel
 
-SourceType = Literal["ical", "jsonld", "confstech", "html"]
+SourceType = Literal["ical", "jsonld", "confstech", "html", "aiweek"]
 ReviewStatus = Literal["auto", "needs_review", "verified"]
 
 

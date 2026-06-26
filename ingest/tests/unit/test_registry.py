@@ -17,4 +17,4 @@ def test_loads_only_active(tmp_path):
 def test_default_registry_parses():
     srcs = load_sources(only_active=False)
     assert len(srcs) >= 4
-    assert all(s.type in {"ical", "jsonld", "confstech", "html"} for s in srcs)
+    assert all(s.type in {"ical", "jsonld", "confstech", "html", "aiweek"} for s in srcs)

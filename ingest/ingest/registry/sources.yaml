@@ -227,14 +227,17 @@ sources:
     # verify: Nächster Termin Sa 2026-06-27 (Stadtbücherei Würzburg) im HTML.
     #         Stand 2026-06-25.
 
-  # --- Headless/JS-gerendert (Listing erst im DOM, fetch_rendered via Playwright) ---
+  # --- Strukturierte JSON-Exporte (deterministisch, kein LLM) ---
   - name: AI Week Mainfranken
-    url: https://www.ai-week.de/programm.php
-    type: html
+    # programm.php ist eine SPA (rendert nur den aktiven Tag); die vollständigen
+    # Daten – alle Tage, mit Orten – liefert der timetable-JSON-Export direkt.
+    url: https://backend.timetable.ai-week.de/export/session.json
+    type: aiweek
     region: Mainfranken
     organizer: AI Week Mainfranken
     active: true
-    headless: true
+
+  # --- Headless/JS-gerendert (Listing erst im DOM, fetch_rendered via Playwright) ---
   - name: baiosphere – KI-Netzwerk Bayern
     url: https://baiosphere.org/events/
     type: html
