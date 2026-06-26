@@ -36,9 +36,12 @@ def dedupe(events: list[NormalizedEvent]) -> list[NormalizedEvent]:
             if key in seen_ids:
                 continue
             seen_ids.add(key)
-        else:
-            if e.content_hash in seen_hashes:
-                continue
+        # content_hash IMMER prüfen, auch bei vorhandener external_id: dasselbe
+        # Event aus zwei Quellen hat unterschiedliche (source, external_id), aber
+        # denselben content_hash. Ohne diese Prüfung überleben beide und der
+        # DB-Upsert verletzt die content_hash-UNIQUE-Constraint (23505).
+        if e.content_hash in seen_hashes:
+            continue
         seen_hashes.add(e.content_hash)
         out.append(e)
     return out
