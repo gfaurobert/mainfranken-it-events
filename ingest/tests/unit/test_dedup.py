@@ -30,6 +30,18 @@ def test_dedupe_by_content_hash_when_no_id():
     out = dedupe([a, b])
     assert len(out) == 1
 
+def test_dedupe_same_event_from_two_sources_collapses_on_content_hash():
+    """Dasselbe Event aus zwei Quellen: gleicher content_hash, aber je eigene
+    (source, external_id). Muss zu EINEM Event kollabieren – sonst kollidiert der
+    DB-Upsert mit der content_hash-UNIQUE-Constraint (23505)."""
+    a = _ev(title="Moderne Datenschutzverfahren", city="Würzburg",
+            source="AI Week Mainfranken", external_id="97")
+    b = _ev(title="Moderne Datenschutzverfahren", city="Würzburg",
+            source="THWS", external_id="thws-123")
+    assert a.content_hash == b.content_hash      # gleicher Termin → gleicher Hash
+    out = dedupe([a, b])
+    assert len(out) == 1
+
 def test_hash_same_instant_different_timezones_equal():
     """Same instant in UTC+2 and UTC must produce identical content hashes."""
     tz_plus2 = timezone(timedelta(hours=2))

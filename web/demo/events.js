@@ -67,25 +67,32 @@ function normalizeEvent(event) {
   };
 }
 
+// Events ohne erkennbare Uhrzeit kommen mit Mitternacht (00:00) an. "00:00 Uhr"
+// anzuzeigen wirkt wie eine echte Startzeit – stattdessen leer lassen. Geprüft
+// wird das formatierte Ergebnis (nicht getHours), damit es zur Anzeige-Zeitzone passt.
+function formatClock(date) {
+  const t = timeFormatter.format(date);
+  return t === "00:00" ? "" : `${t} Uhr`;
+}
+
 function formatDateParts(isoDate) {
   const date = new Date(isoDate);
   return {
     day: dateFormatter.formatToParts(date).find((part) => part.type === "day")?.value || "",
     month: dateFormatter.formatToParts(date).find((part) => part.type === "month")?.value || "",
     year: dateFormatter.formatToParts(date).find((part) => part.type === "year")?.value || "",
-    time: `${timeFormatter.format(date)} Uhr`,
+    time: formatClock(date),
   };
 }
 
 function formatTimeRange(startsAt, endsAt) {
-  const start = `${timeFormatter.format(new Date(startsAt))} Uhr`;
+  const start = formatClock(new Date(startsAt));
+  if (!start) return "";
   if (!endsAt) return start;
 
-  const end = `${timeFormatter.format(new Date(endsAt))} Uhr`;
-  const sameDay =
-    new Date(startsAt).toDateString() === new Date(endsAt).toDateString();
-
-  return sameDay ? `${start} – ${end}` : `${start} – ${end}`;
+  const end = formatClock(new Date(endsAt));
+  if (!end) return start;
+  return `${start} – ${end}`;
 }
 
 function formatLocation(event) {
