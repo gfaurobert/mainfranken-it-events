@@ -21,8 +21,14 @@ WORKDIR /code
 COPY ./pyproject.toml ./README.md ./uv.lock* ./
 
 COPY ./app ./app
+COPY ./ingest ./ingest
 
-RUN uv sync --frozen
+# Headless-Browser-Stack für den Ingest-Agent (fetch_rendered rendert JS-lastige
+# Quellen). Das [headless]-Extra zieht playwright; `playwright install --with-deps`
+# holt Chromium samt System-Bibliotheken. Ohne diesen Schritt fallen headless-
+# Quellen zur Laufzeit sauber auf 0 Events zurück (FetchError-Soft-Skip).
+RUN uv sync --frozen --extra headless \
+ && uv run playwright install --with-deps chromium
 
 ARG COMMIT_SHA=""
 ENV COMMIT_SHA=${COMMIT_SHA}
