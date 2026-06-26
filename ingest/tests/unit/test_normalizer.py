@@ -62,3 +62,23 @@ def test_finalize_keeps_specific_url_over_source_url():
                     source_url="https://zdi-mainfranken.de/events")]
     out = finalize(raw, {})
     assert out[0].url == "https://zdi-mainfranken.de/events/42"
+
+
+def test_finalize_sets_location_online_for_online_event_without_location():
+    raw = [RawEvent(title="Webinar", starts_at=DT, source="bitkom")]
+    tagged = {0: TaggedItem(index=0, tags=["webinar"], is_online=True)}
+    out = finalize(raw, tagged)
+    assert out[0].location_name == "Online"
+
+
+def test_finalize_keeps_existing_location_for_online_event():
+    raw = [RawEvent(title="Hybrid", starts_at=DT, source="x", location_name="THWS Würzburg")]
+    tagged = {0: TaggedItem(index=0, tags=["hybrid"], is_online=True)}
+    out = finalize(raw, tagged)
+    assert out[0].location_name == "THWS Würzburg"
+
+
+def test_finalize_does_not_set_online_for_offline_event_without_location():
+    raw = [RawEvent(title="Vor Ort", starts_at=DT, source="x")]
+    out = finalize(raw, {})
+    assert out[0].location_name is None

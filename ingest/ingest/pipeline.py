@@ -36,6 +36,17 @@ def _stable_html_external_id(title: str, starts_at: datetime) -> str:
     return f"{starts_at.date().isoformat()}|{slug}"
 
 
+def _with_source_defaults(e: RawEvent, src: SourceConfig) -> RawEvent:
+    """Füllt fehlende Quell-Defaults am Event auf.
+
+    Veranstalter soll überall vorhanden sein. Liefert eine Quelle (z. B. eine
+    html-Seite) keinen eigenen organizer, greift der in der Registry gepflegte
+    Quell-Veranstalter, andernfalls als letzter Anker der Quellenname."""
+    if e.organizer:
+        return e
+    return e.model_copy(update={"organizer": src.organizer or src.name})
+
+
 async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
     # Feed einmal laden. Ein nicht erreichbarer/404-Feed (in der Praxis häufig:
     # Gruppe ohne Termine, Seite umgezogen) ist KEIN harter Pipeline-Fehler —
@@ -48,12 +59,12 @@ async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
         return [], "auto"
 
     if src.type == "ical":
-        return ical.parse_ical(text, src), "auto"
-    if src.type == "confstech":
-        return confstech.parse_confstech(text, src), "auto"
-    if src.type == "jsonld":
-        return jsonld.parse_jsonld(text, src), "auto"
-    if src.type == "html":
+        events, status = ical.parse_ical(text, src), "auto"
+    elif src.type == "confstech":
+        events, status = confstech.parse_confstech(text, src), "auto"
+    elif src.type == "jsonld":
+        events, status = jsonld.parse_jsonld(text, src), "auto"
+    elif src.type == "html":
         text = html_to_text(text)
         today = datetime.now(timezone.utc).date().isoformat()
         prompt = (f"Heutiges Datum: {today}\nQuelle: {src.name}\n"
@@ -74,8 +85,13 @@ async def collect_from_source(src: SourceConfig) -> tuple[list[RawEvent], str]:
                 "ends_at": _ensure_aware(e.ends_at),
                 "external_id": external_id,
             }))
-        return events, "needs_review"
-    return [], "auto"
+        status = "needs_review"
+    else:
+        events, status = [], "auto"
+
+    # Quell-Defaults (Veranstalter) einheitlich für alle Connector-Typen auffüllen.
+    events = [_with_source_defaults(e, src) for e in events]
+    return events, status
 
 
 # Der Tagger läuft in Batches: ein einziger LLM-Call über sehr viele Events ist

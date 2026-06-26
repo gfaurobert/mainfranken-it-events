@@ -1,8 +1,13 @@
 from datetime import datetime, timedelta, timezone
 from ingest.pipeline import (
     is_upcoming, _upcoming_window, HORIZON_DAYS, _ensure_aware, apply_geo_filter,
+    _with_source_defaults,
 )
-from ingest.models import RawEvent, NormalizedEvent
+from ingest.models import RawEvent, NormalizedEvent, SourceConfig
+
+_SRC = SourceConfig(name="Uni Würzburg – Institut für Informatik",
+                    url="https://example.org", type="html", region="Würzburg",
+                    organizer="Uni Würzburg")
 
 
 def _ev(dt: datetime) -> RawEvent:
@@ -84,3 +89,25 @@ def test_geo_filter_keeps_existing_needs_review_for_unknown():
     out = apply_geo_filter([_norm(location_name="irgendwo", status="needs_review")])
     assert len(out) == 1
     assert out[0].review_status == "needs_review"
+
+
+def _raw(organizer=None) -> RawEvent:
+    return RawEvent(title="x", starts_at=datetime(2026, 7, 1, tzinfo=timezone.utc),
+                    source="s", organizer=organizer)
+
+
+def test_source_defaults_fills_organizer_from_source():
+    out = _with_source_defaults(_raw(organizer=None), _SRC)
+    assert out.organizer == "Uni Würzburg"
+
+
+def test_source_defaults_keeps_existing_organizer():
+    out = _with_source_defaults(_raw(organizer="Eigener Veranstalter"), _SRC)
+    assert out.organizer == "Eigener Veranstalter"
+
+
+def test_source_defaults_falls_back_to_source_name_when_no_organizer():
+    src = SourceConfig(name="confs.tech (DE)", url="https://x", type="confstech",
+                       region="Germany", organizer=None)
+    out = _with_source_defaults(_raw(organizer=None), src)
+    assert out.organizer == "confs.tech (DE)"

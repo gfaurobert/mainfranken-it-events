@@ -55,6 +55,10 @@ def finalize(
         # Quell-URL zurückfallen, statt einen Detail-Link ganz wegzulassen.
         if not dump.get("url"):
             dump["url"] = e.source_url
+        # Online-Events haben oft keinen physischen Ort. Statt einer leeren
+        # Ortsspalte explizit "Online" anzeigen.
+        if is_online and not dump.get("location_name"):
+            dump["location_name"] = "Online"
         out.append(
             NormalizedEvent(
                 **dump,

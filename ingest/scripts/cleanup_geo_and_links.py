@@ -36,7 +36,7 @@ def _load_root_env() -> None:
 
 
 _PAGE_SIZE = 1000
-_COLUMNS = "id,title,city,location_name,is_online,review_status,url,source_url"
+_COLUMNS = "id,title,city,location_name,is_online,review_status,url,source_url,organizer,source"
 
 
 def _fetch_all_events(client) -> list[dict]:
@@ -76,13 +76,26 @@ def main() -> int:
     client = create_client(url, key)
     rows = _fetch_all_events(client)
 
+    # Quell-Veranstalter aus der Registry (auch inaktive Quellen), Fallback: der
+    # Quellenname selbst – analog zu _with_source_defaults in der Pipeline.
+    from ingest.registry.loader import load_sources
+    src_org = {s.name: (s.organizer or s.name) for s in load_sources(only_active=False)}
+
     to_delete: list[dict] = []
     to_review: list[dict] = []
     to_fill_url: list[dict] = []
+    to_fill_org: list[tuple[dict, str]] = []
+    to_set_online_loc: list[dict] = []
 
     for r in rows:
         if not r.get("url") and r.get("source_url"):
             to_fill_url.append(r)
+        if not r.get("organizer"):
+            org = src_org.get(r.get("source"), r.get("source") or "")
+            if org:
+                to_fill_org.append((r, org))
+        if r.get("is_online") and not r.get("location_name"):
+            to_set_online_loc.append(r)
         if r.get("is_online"):
             continue
         region = classify_region(r.get("city"), r.get("location_name"))
@@ -104,6 +117,8 @@ def main() -> int:
         print(f"    - {(r.get('title') or '')[:70]}")
 
     print(f"\n[3] url := source_url (Detail-Link fehlt): {len(to_fill_url)}")
+    print(f"[4] organizer := Quell-Veranstalter (fehlt): {len(to_fill_org)}")
+    print(f"[5] location_name := 'Online' (online, ohne Ort): {len(to_set_online_loc)}")
 
     if not confirm:
         print("\nDry-Run – nichts geändert. Mit CONFIRM=1 erneut ausführen.")
@@ -115,9 +130,14 @@ def main() -> int:
         client.table("events").update({"review_status": "needs_review"}).eq("id", r["id"]).execute()
     for r in to_fill_url:
         client.table("events").update({"url": r["source_url"]}).eq("id", r["id"]).execute()
+    for r, org in to_fill_org:
+        client.table("events").update({"organizer": org}).eq("id", r["id"]).execute()
+    for r in to_set_online_loc:
+        client.table("events").update({"location_name": "Online"}).eq("id", r["id"]).execute()
 
     print(f"\nFertig: {len(to_delete)} gelöscht, {len(to_review)} auf needs_review, "
-          f"{len(to_fill_url)} Links ergänzt.")
+          f"{len(to_fill_url)} Links, {len(to_fill_org)} Veranstalter, "
+          f"{len(to_set_online_loc)} Online-Orte ergänzt.")
     return 0
 
 
