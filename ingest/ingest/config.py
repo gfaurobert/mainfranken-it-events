@@ -19,7 +19,7 @@ def get_settings() -> Settings:
     return Settings(
         opencode_key=os.environ.get("OPENCODE_GO_KEY", ""),
         opencode_base_url=os.environ.get("OPENCODE_GO_BASE_URL", ""),
-        opencode_model=os.environ.get("OPENCODE_GO_MODEL", "deep-v4-flash"),
+        opencode_model=os.environ.get("OPENCODE_GO_MODEL", "deepseek-v4-flash"),
         supabase_url=os.environ.get("SUPABASE_URL", ""),
         supabase_service_key=os.environ.get("SUPABASE_SERVICE_ROLE_KEY", ""),
         sink=os.environ.get("INGEST_SINK", "supabase"),
