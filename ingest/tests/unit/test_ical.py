@@ -16,6 +16,34 @@ def test_parse_ical_basic():
     assert e.starts_at.year == 2026
 
 
+def test_summary_wiki_anchor_stripped_from_title():
+    """SUMMARY 'Plenum#_<md5>' (Wiki-Anker) → Titel 'Plenum'; UID behält den
+    Hash, damit external_id eindeutig bleibt."""
+    ics = (
+        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+        "BEGIN:VEVENT\r\n"
+        "UID:https://wiki/Plenum#_8b71d30cd245ffcd830da2defe30cc6f\r\n"
+        "SUMMARY:Plenum#_8b71d30cd245ffcd830da2defe30cc6f\r\n"
+        "DTSTART:20260801T180000Z\r\n"
+        "END:VEVENT\r\n"
+        "END:VCALENDAR\r\n"
+    )
+    events = parse_ical(ics, SRC)
+    assert events[0].title == "Plenum"
+    assert events[0].external_id.endswith("#_8b71d30cd245ffcd830da2defe30cc6f")
+
+
+def test_normal_title_with_hash_preserved():
+    """'C# Workshop' darf nicht beschnitten werden (kein '#_<hex>'-Anker)."""
+    ics = (
+        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+        "BEGIN:VEVENT\r\nUID:u1\r\nSUMMARY:C# Workshop\r\n"
+        "DTSTART:20260801T180000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    )
+    events = parse_ical(ics, SRC)
+    assert events[0].title == "C# Workshop"
+
+
 def test_parse_ical_whitespace_location_becomes_none():
     """A LOCATION field containing only whitespace should be normalised to None."""
     ics = (

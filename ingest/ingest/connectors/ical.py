@@ -1,6 +1,16 @@
+import re
 from datetime import date, datetime, time, timezone
 from icalendar import Calendar
 from ingest.models import RawEvent, SourceConfig
+
+# Wiki-basierte Kalender hängen an SUMMARY/UID einen Anker '#_<md5>' an
+# (z.B. 'Plenum#_8b71d30c...'). Im Titel ist das Müll; in der UID bleibt er
+# (macht die external_id eindeutig).
+_ANCHOR_RE = re.compile(r"#_[0-9a-fA-F]{8,}$")
+
+
+def _clean_title(summary: str) -> str:
+    return _ANCHOR_RE.sub("", summary).strip() or "(ohne Titel)"
 
 
 def _to_dt(value) -> datetime:
@@ -23,7 +33,7 @@ def parse_ical(ics_text: str, source: SourceConfig) -> list[RawEvent]:
         dtend = comp.get("DTEND")
         loc = str(comp.get("LOCATION")).strip() or None if comp.get("LOCATION") else None
         out.append(RawEvent(
-            title=str(comp.get("SUMMARY", "")).strip() or "(ohne Titel)",
+            title=_clean_title(str(comp.get("SUMMARY", ""))),
             starts_at=_to_dt(dtstart.dt),
             ends_at=_to_dt(dtend.dt) if dtend else None,
             description=str(comp.get("DESCRIPTION")) if comp.get("DESCRIPTION") else None,
