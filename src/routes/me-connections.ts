@@ -64,7 +64,11 @@ export const meConnectionsRoutes: FastifyPluginAsync<MeConnectionsRouteOptions> 
 
   app.post("/me/connections/otp", { preHandler: requirePat }, async (request, reply) => {
     try {
-      return await requestConnectionOtp(opts.supabase, request.userId!);
+      const result = await requestConnectionOtp(opts.supabase, request.userId!);
+      return {
+        ...result,
+        message: `Share this code with your friend: ${result.code} (expires ${result.expires_at})`,
+      };
     } catch (error) {
       const mapped = mapConnectionError(error, reply);
       if (mapped) return mapped;

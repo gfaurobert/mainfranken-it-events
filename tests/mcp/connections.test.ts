@@ -73,10 +73,15 @@ describe("mcp connection tools", () => {
     });
     const tools = setupConnectionTools();
 
+    let otpResult: Awaited<ReturnType<ToolHandler>> | undefined;
     await authContext.run({ userId: "user-123" }, async () => {
-      await tools.get("request_connection_otp")!({});
+      otpResult = await tools.get("request_connection_otp")!({});
       await tools.get("list_connections")!({});
     });
+
+    expect(otpResult?.content[0]?.text).toContain("123456");
+    expect(otpResult?.content[0]?.text).not.toContain("[object Object]");
+    expect(otpResult?.structuredContent?.message).toContain("123456");
 
     expect(requestConnectionOtpModule.requestConnectionOtp).toHaveBeenCalledWith(
       expect.anything(),

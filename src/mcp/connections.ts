@@ -33,6 +33,12 @@ const removeConnectionInputSchema = z.object({
   user_id: z.string().uuid(),
 });
 
+const emptyInputSchema = z.object({});
+
+function formatConnectionOtpMessage(code: string, expiresAt: string) {
+  return `Share this code with your friend: ${code} (expires ${expiresAt})`;
+}
+
 function authErrorResult(error: unknown) {
   if (!(error instanceof Error)) return undefined;
   if (!error.message.startsWith("Authentication required")) return undefined;
@@ -68,15 +74,17 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
       title: "Request connection code",
       description:
         "Generate a 6-digit code to share with a friend so they can connect with you. Requires PAT auth.",
+      inputSchema: emptyInputSchema,
     },
     async () => {
       try {
         const userId = requireAuthUserId();
         const result = await requestConnectionOtp(supabase, userId);
-        const text = `Share this code with your friend: ${result.code} (expires ${result.expires_at})`;
+        const message = formatConnectionOtpMessage(result.code, result.expires_at);
+        const structuredContent = { message, code: result.code, expires_at: result.expires_at };
         return {
-          content: [{ type: "text", text }],
-          structuredContent: result as unknown as Record<string, unknown>,
+          content: [{ type: "text" as const, text: message }],
+          structuredContent,
         };
       } catch (error) {
         const authError = authErrorResult(error);
@@ -119,6 +127,7 @@ export function registerConnectionTools(server: McpServer, supabase: SupabaseCli
     {
       title: "List my connections",
       description: "List users you are connected with. Requires PAT auth.",
+      inputSchema: emptyInputSchema,
       annotations: { readOnlyHint: true },
     },
     async () => {

@@ -94,6 +94,7 @@ describe("me-connections routes", () => {
     expect(res.json()).toEqual({
       code: "123456",
       expires_at: "2026-06-26T12:00:00.000Z",
+      message: "Share this code with your friend: 123456 (expires 2026-06-26T12:00:00.000Z)",
     });
     expect(requestOtpModule.requestConnectionOtp).toHaveBeenCalledWith(
       expect.anything(),
