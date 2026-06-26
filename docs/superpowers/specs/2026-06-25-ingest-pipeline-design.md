@@ -153,19 +153,28 @@ model = LiteLlm(
 
 OpenAI-kompatibler Provider → LiteLLM-`openai/`-Prefix + custom `api_base`. Secrets in `.env` (außerhalb Repo). **Offen:** exakter Modell-String und `api_base` von OpenCode-Go.
 
-## 10. Quellen-Registry — initiale Einträge (MVP)
+## 10. Quellen-Registry — Stand 2026-06-25 (live verifiziert)
 
-Aus der Recherche, nach Ingest-Eignung priorisiert:
+Die kuratierte Liste lebt in `ingest/registry/sources.yaml`. Aktueller Stand:
+**28 Quellen — 22 `active`, 6 `active:false`** (Discovery via 5 parallele
+Recherche-Subagenten, jede Quelle per Fetch + echtem `collect_from_source`
+gegen den Live-LLM verifiziert).
 
-| Quelle | type | Hinweis |
-|---|---|---|
-| Schaffenburg e.V. (Makerspace AB) | `ical` | `complete.ics` / `noopenspace.ics`, 24h-Update — Top-Quelle |
-| Meetup-Gruppen (WUE.tech, Modern Software Dev, FrankenJS, WPMeetup, Data&Analytics) | `ical` | `/<gruppe>/events/ical/` — nur kommende Events |
-| confs.tech | `confstech` | offenes GitHub-JSON, MIT-Lizenz — rechtssicher, DE-Konferenzen |
-| Gründerzentren Würzburg | `ical` | iCal je Event (`?_func=genIcs`) |
-| ZDI Mainfranken / Startbahn27 / IHK / THWS-FIW | `html` | statisches HTML → LLM-Extractor |
+**Aktiv nach Typ:**
 
-**Stretch-Quellen (headless):** AI Week Mainfranken (`ai-week.de`), baiosphere (Storyblok-CDN).
+| Typ | Quellen |
+|---|---|
+| `ical` | Schaffenburg e.V., Nerd2Nerd/Chaostreff Würzburg, Meetup (WUE.tech, Modern Software Dev, DATA & ANALYTICS, WPMeetup, Agile Usergroup Unterfranken, DevOps Würzburg) |
+| `confstech` | confs.tech general.json, confs.tech javascript.json (Filter `country=Germany`) |
+| `html` (LLM-Extractor) | JMU Informatik, THWS-FIW, THWS-CAIRO, TH Aschaffenburg, ZDI Mainfranken, HWK Unterfranken, Startbahn27, Gründerzentren Würzburg, DGZ Aschaffenburg, Region Mainfranken, Eventbrite Science&Tech Würzburg, Bitkom |
+
+**`active:false` (dokumentiert, nicht ingestiert):** Meetup FrankenJS & Web Development AB
+(Feeds aktuell leer), Nerd2Nerd Plone-Feed (veraltet), AI Week Mainfranken & baiosphere
+(`headless:true` — JS-gerendert, brauchen Headless-Connector), GI Regionalgruppe Würzburg
+(aktuell keine Termine).
+
+**Verifikationsergebnis:** alle aktiven Quellen laufen fehlerfrei (`errors=0`); leere/404-Feeds
+(z.B. DevOps-Meetup, leere Meetup-Feeds) werden weich übersprungen (0 Events, kein harter Fehler).
 
 ## 11. Ausführung & Trigger
 
