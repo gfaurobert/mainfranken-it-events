@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod";
 import type { Env } from "../lib/env.js";
-import { requireAuthUserId } from "../lib/auth-context.js";
+import { requireAuthUserId, getRequestLog } from "../lib/auth-context.js";
 import { registerEmailSchema, rsvpStatusSchema } from "../schemas/auth.js";
 import { RegisterRateLimitedError, registerUser } from "../services/register-user.js";
 import { listMyRsvps } from "../services/list-my-rsvps.js";
@@ -44,7 +44,10 @@ export function registerAuthTools(server: McpServer, supabase: SupabaseClient, e
     },
     async ({ email }) => {
       try {
-        const result = await registerUser(supabase, env, { email });
+        const result = await registerUser(supabase, env, {
+          email,
+          log: getRequestLog(),
+        });
         return {
           content: [{ type: "text", text: result.message }],
           structuredContent: result as unknown as Record<string, unknown>,

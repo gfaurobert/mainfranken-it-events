@@ -47,20 +47,34 @@ export function buildPatEmail(input: { pat: string; isRenewal: boolean }) {
   return { subject, text };
 }
 
+export interface PatEmailDeliveryResult {
+  messageId?: string;
+  accepted: string[];
+  rejected: string[];
+  response?: string;
+}
+
 export async function sendPatEmail(
   transport: Transporter,
   env: Env,
   input: PatEmailInput,
-): Promise<void> {
+): Promise<PatEmailDeliveryResult> {
   const { subject, text } = buildPatEmail({
     pat: input.pat,
     isRenewal: input.isRenewal,
   });
 
-  await transport.sendMail({
+  const info = await transport.sendMail({
     from: env.SMTP_FROM,
     to: input.to,
     subject,
     text,
   });
+
+  return {
+    messageId: info.messageId,
+    accepted: info.accepted.map(String),
+    rejected: info.rejected.map(String),
+    response: info.response,
+  };
 }

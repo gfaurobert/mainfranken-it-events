@@ -22,6 +22,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (app, opt
     try {
       return await registerUser(opts.supabase, opts.env, {
         email: parsed.data.email,
+        log: request.log,
       });
     } catch (error) {
       if (error instanceof RegisterRateLimitedError) {

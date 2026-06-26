@@ -72,7 +72,7 @@ export async function registerMcpRoutes(
 
       reply.hijack();
       const userId = await resolvePatFromHeader(supabase, getAuthorizationHeader(request));
-      await authContext.run({ userId: userId ?? undefined }, async () => {
+      await authContext.run({ userId: userId ?? undefined, log: request.log }, async () => {
         await transport.handleRequest(request.raw, reply.raw, body);
       });
     } catch (error) {
