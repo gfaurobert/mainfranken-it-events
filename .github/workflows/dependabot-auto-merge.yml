@@ -42,7 +42,7 @@ jobs:
       # --- npm (pnpm, repo root) checks ---
       - name: Install pnpm
         if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && steps.metadata.outputs.package-ecosystem == 'npm_and_yarn'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && steps.metadata.outputs.package-ecosystem == 'npm_and_yarn'
