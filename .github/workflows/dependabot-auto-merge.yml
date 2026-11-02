@@ -35,7 +35,7 @@ jobs:
 
       - name: Checkout PR head
         if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && (steps.metadata.outputs.package-ecosystem == 'npm_and_yarn' || steps.metadata.outputs.package-ecosystem == 'uv')
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
