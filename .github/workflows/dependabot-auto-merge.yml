@@ -64,7 +64,7 @@ jobs:
       # --- uv (ingest/) checks ---
       - name: Setup uv
         if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && steps.metadata.outputs.package-ecosystem == 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Sync and unit-test (uv)
         if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && steps.metadata.outputs.package-ecosystem == 'uv'
